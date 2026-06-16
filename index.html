@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>From Vibe Coding to Agentic Engineering — SDD with GitHub Copilot</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css" id="theme">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+  <link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ===================== 0. TITLE ===================== -->
+<section data-background-gradient="radial-gradient(circle at 30% 20%, #15233b 0%, #0d1117 60%)">
+  <span class="kicker">☕ JavaTalk · GitHub Copilot Workshop</span>
+  <h1 class="grad">From Vibe Coding<br>to Agentic Engineering</h1>
+  <h3 class="subtle">A practical Spec-Driven Development (SDD) framework</h3>
+  <p class="meta">90-minute hands-on session &nbsp;·&nbsp; for Java / JVM developers</p>
+  <aside class="notes">
+    Welcome to JavaTalk. Today we move from "vibe coding" — improvising with an AI assistant —
+    to "agentic engineering" — a disciplined, spec-driven way of working where AI agents do
+    real engineering under guardrails. Examples use a familiar Java/Spring stack, tests with
+    JUnit and AssertJ, and builds with Maven/Gradle. By the end you'll know exactly which
+    skills, agents and knowledge files to build, and how they fit together. Set expectations:
+    90 minutes, interactive, demo at the end.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> خوش آمدید به JavaTalk. امروز از «کدنویسی شهودی» (Vibe Coding) — یعنی بداهه‌پردازی با یک
+    دستیار هوش مصنوعی — به سمت «مهندسی عامل‌محور» (Agentic Engineering) حرکت می‌کنیم؛ روشی
+    منظم و مبتنی بر مشخصات که در آن عامل‌های هوش مصنوعی زیر نظارت و قاعده، کار مهندسی واقعی
+    انجام می‌دهند. مثال‌ها با پشتهٔ آشنای Java/Spring، تست با JUnit و AssertJ، و ساخت با
+    Maven/Gradle خواهند بود. در پایان دقیقاً می‌دانید کدام مهارت‌ها (Skills)، عامل‌ها (Agents)
+    و فایل‌های دانش را باید بسازید و چطور کنار هم می‌نشینند. انتظارات: ۹۰ دقیقه، تعاملی، با
+    دموی پایانی.</div>
+  </aside>
+</section>
+
+<!-- ===================== 1. AGENDA ===================== -->
+<section>
+  <h2>Agenda <span class="subtle">· 90 minutes</span></h2>
+  <table class="agenda">
+    <tr><td class="t">0–10</td><td>The problem: what "vibe coding" really costs</td></tr>
+    <tr><td class="t">10–20</td><td>The shift: agentic engineering &amp; SDD</td></tr>
+    <tr><td class="t">20–45</td><td>The four core skills: <code>brainstorm → write-spec → implement-epic → verify-epic</code></td></tr>
+    <tr><td class="t">45–55</td><td>Verification &amp; Playwright integration</td></tr>
+    <tr><td class="t">55–70</td><td>Project knowledge + advisory agents</td></tr>
+    <tr><td class="t">70–80</td><td>Documentation system (<code>init-docs</code>)</td></tr>
+    <tr><td class="t">80–90</td><td>Live demo, adoption roadmap &amp; Q&amp;A</td></tr>
+  </table>
+  <aside class="notes">
+    Walk them through the map. Emphasize this is a *system*, not a pile of prompts. Each
+    block builds on the last. Keep an eye on the clock — the speaker timer is in the
+    bottom-right of speaker view (press S).
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> نقشهٔ کلی را مرور کنید. تأکید کنید این یک «سامانه» است، نه مجموعه‌ای پراکنده از
+    پرامپت‌ها. هر بخش روی بخش قبلی بنا می‌شود. حواستان به زمان باشد — تایمر سخنران در نمای
+    سخنران (کلید S) پایین صفحه است.</div>
+  </aside>
+</section>
+
+<!-- ===================== 2. THE PROBLEM ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 70% 30%, #2a1a2e 0%, #0d1117 60%)">
+    <span class="kicker">Part 1 · The Problem</span>
+    <h2>What is <span class="grad">vibe coding?</span></h2>
+    <blockquote>"Just describe what you want and let the AI run with it."</blockquote>
+    <p class="subtle">Fast, fun, conversational — and increasingly how a lot of code gets written.</p>
+    <aside class="notes">
+      Define it honestly and without judgement. Vibe coding = prompt, accept, prompt again.
+      No spec, no tests-first, no shared definition of done. It's genuinely great for
+      prototypes, throwaway scripts, and learning. The problem is what happens when that
+      style meets a real codebase, a team, and production.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> صادقانه و بدون قضاوت تعریفش کنید. کدنویسی شهودی یعنی: پرامپت بده، بپذیر، دوباره پرامپت
+      بده. نه مشخصاتی، نه تست‌محوری، نه تعریف مشترکی از «انجام‌شده» (Definition of Done). این
+      روش برای نمونهٔ اولیه، اسکریپت یکبارمصرف و یادگیری عالی است. مشکل آنجاست که این سبک به
+      یک کدبیس واقعی، یک تیم و محیط تولید (Production) برسد.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>Vibe coding: the honest scorecard</h2>
+    <div class="two-col">
+      <div class="card good">
+        <h3>✅ Where it shines</h3>
+        <ul>
+          <li>Prototypes &amp; spikes</li>
+          <li>Learning a new API</li>
+          <li>One-off scripts</li>
+          <li>Exploring an idea fast</li>
+        </ul>
+      </div>
+      <div class="card bad">
+        <h3>⚠️ Where it breaks</h3>
+        <ul>
+          <li>No shared <em>definition of done</em></li>
+          <li>Untested, unverifiable output</li>
+          <li>Context lost between sessions</li>
+          <li>Architecture drift &amp; rework</li>
+          <li>Doesn't scale across a team</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">
+      The failure mode isn't "the AI writes bad code." It's that there is no artifact that
+      says what "correct" means. So you can't verify, you can't onboard, you can't review at
+      scale. Every session restarts from zero context. That's the gap SDD fills.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> حالت شکست این نیست که «هوش مصنوعی کد بد می‌نویسد». مشکل این است که هیچ مصنوعی (Artifact)
+      وجود ندارد که بگوید «درست» یعنی چه. پس نمی‌توان راستی‌آزمایی کرد، نمی‌توان افراد را
+      وارد کار کرد، و نمی‌توان در مقیاس بازبینی کرد. هر جلسه از صفرِ زمینه شروع می‌شود. SDD
+      دقیقاً همین شکاف را پر می‌کند.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>The core gap</h2>
+    <p class="big">No <span class="grad">spec</span> → no shared truth →<br>no way to <span class="grad">verify</span>.</p>
+    <p class="subtle">If you can't state the acceptance criteria, neither you nor the agent can prove the work is done.</p>
+    <aside class="notes">
+      This is the single most important slide of Part 1. Everything that follows is about
+      creating a verifiable source of truth — the spec and its acceptance criteria — and
+      then wiring agents to produce and check against it.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> این مهم‌ترین اسلاید بخش ۱ است. هر چه در ادامه می‌آید دربارهٔ ساختن یک منبع حقیقتِ
+      راستی‌آزمایی‌پذیر است — یعنی مشخصات و معیارهای پذیرش آن — و سپس سیم‌کشی عامل‌ها برای
+      تولید و بررسی در برابر آن.</div>
+  </aside>
+  </section>
+</section>
+
+<!-- ===================== 3. THE SHIFT ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 30% 30%, #15233b 0%, #0d1117 60%)">
+    <span class="kicker">Part 2 · The Shift</span>
+    <h2>Agentic <span class="grad">engineering</span></h2>
+    <p class="subtle">AI agents doing real engineering work — under explicit guardrails, against an explicit spec, with automated verification.</p>
+    <aside class="notes">
+      Agentic engineering keeps the speed of AI but adds the discipline of engineering:
+      explicit requirements, tests-first, verification gates, persistent project knowledge,
+      and specialized advisors. The human moves from "typist" to "director / reviewer."
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> مهندسی عامل‌محور سرعت هوش مصنوعی را حفظ می‌کند ولی نظم مهندسی را اضافه می‌کند:
+      الزامات صریح، تست‌محوری (TDD)، دروازه‌های راستی‌آزمایی، دانش پایدار پروژه و مشاوران
+      تخصصی. نقش انسان از «تایپیست» به «کارگردان/بازبین» تغییر می‌کند.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>Vibe vs. Agentic — at a glance</h2>
+    <table class="cmp">
+      <thead><tr><th></th><th>Vibe Coding</th><th>Agentic Engineering</th></tr></thead>
+      <tbody>
+        <tr><td>Source of truth</td><td>The chat thread</td><td>Versioned PRD + spec</td></tr>
+        <tr><td>Definition of done</td><td>"Looks right"</td><td>Acceptance Criteria + tests</td></tr>
+        <tr><td>Testing</td><td>Maybe, after</td><td>TDD, tests first</td></tr>
+        <tr><td>Verification</td><td>Manual eyeballing</td><td>Automated <code>verify-epic</code></td></tr>
+        <tr><td>Context</td><td>Lost each session</td><td>Persistent knowledge files</td></tr>
+        <tr><td>Decisions</td><td>Implicit</td><td>Logged + advisor-reviewed</td></tr>
+        <tr><td>Human role</td><td>Prompter</td><td>Director &amp; reviewer</td></tr>
+      </tbody>
+    </table>
+    <aside class="notes">
+      Walk row by row. The right column is literally the framework we build today. Each row
+      maps to an artifact or skill: PRD (brainstorm), spec+ACs (write-spec), TDD
+      (implement-epic), verification (verify-epic), knowledge files, advisory agents.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> سطر به سطر پیش بروید. ستون سمت چپ دقیقاً همان چارچوبی است که امروز می‌سازیم. هر سطر به
+      یک مصنوع یا مهارت نگاشت می‌شود: PRD (brainstorm)، مشخصات+معیار پذیرش (write-spec)،
+      TDD (implement-epic)، راستی‌آزمایی (verify-epic)، فایل‌های دانش و عامل‌های مشاور.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>The spectrum, not a switch</h2>
+    <div class="spectrum">
+      <span>Vibe</span><span class="arrow">→</span>
+      <span>Assisted</span><span class="arrow">→</span>
+      <span>Spec-driven</span><span class="arrow">→</span>
+      <span class="grad">Agentic</span>
+    </div>
+    <p class="subtle">You don't abandon vibe coding — you graduate to it when the stakes are low, and lean on SDD when they're high.</p>
+    <aside class="notes">
+      Reassure the hands-on devs: vibe coding still has a place. The skill is knowing which
+      mode the task deserves. SDD is the structure you reach for when code must live,
+      ship, and be maintained by others.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> به توسعه‌دهندگان عملی اطمینان بدهید: کدنویسی شهودی هنوز جایگاه دارد. مهارت این است که
+      بدانی کار سزاوار کدام حالت است. SDD ساختاری است که وقتی کد باید زنده بماند، منتشر شود
+      و توسط دیگران نگه‌داری شود، سراغش می‌روی.</div>
+  </aside>
+  </section>
+</section>
+
+<!-- ===================== 4. WHAT IS SDD ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 50% 20%, #102a22 0%, #0d1117 60%)">
+    <span class="kicker">Part 3 · The Method</span>
+    <h2>Spec-Driven Development <span class="grad">(SDD)</span></h2>
+    <p class="subtle">Specs are the program. Code is the compilation target. Agents do the compiling — and the checking.</p>
+    <aside class="notes">
+      The mental model: in SDD the *spec* is the durable artifact you maintain. Code is
+      generated and regenerated against it. Acceptance criteria are the contract. This
+      flips the usual "code is truth, docs rot" dynamic.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> مدل ذهنی: در SDD «مشخصات» همان مصنوع پایداری است که نگه‌داری می‌کنی. کد در برابر آن
+      تولید و بازتولید می‌شود. معیارهای پذیرش، قرارداد هستند. این، رابطهٔ معمول «کد حقیقت
+      است و مستندات می‌پوسد» را وارونه می‌کند.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>Four principles of SDD</h2>
+    <ol class="principles">
+      <li><b>Specs before code.</b> A PRD and technical spec exist before implementation.</li>
+      <li><b>Acceptance Criteria are the contract.</b> Every AC is testable and traceable.</li>
+      <li><b>Tests first (TDD).</b> Tests encode the ACs before the implementation does.</li>
+      <li><b>Verify, don't trust.</b> An automated gate proves each AC is met.</li>
+    </ol>
+    <aside class="notes">
+      These four principles are the through-line of every skill we build. When in doubt,
+      ask: "Does this move us toward a verifiable AC?" If not, it's vibe coding in disguise.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> این چهار اصل، نخ تسبیح همهٔ مهارت‌هایی است که می‌سازیم. هرگاه شک کردی بپرس: «آیا این ما
+      را به یک معیار پذیرشِ راستی‌آزمایی‌پذیر نزدیک می‌کند؟» اگر نه، این همان کدنویسی شهودی
+      در لباس مبدل است.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>The SDD lifecycle</h2>
+    <div class="flow">
+      <div class="node">🧠<br><b>brainstorm</b><br><span>PRD + ACs</span></div>
+      <span class="arrow">→</span>
+      <div class="node">📐<br><b>write-spec</b><br><span>Tech spec + plan</span></div>
+      <span class="arrow">→</span>
+      <div class="node">⚙️<br><b>implement-epic</b><br><span>TDD build</span></div>
+      <span class="arrow">→</span>
+      <div class="node">✅<br><b>verify-epic</b><br><span>Prove ACs</span></div>
+    </div>
+    <p class="subtle center">Surrounded by: <b>project knowledge</b>, <b>advisory agents</b>, and <b>domain docs</b>.</p>
+    <aside class="notes">
+      This is the spine of the whole talk. Each of the next sections zooms into one node.
+      Note the loop: verify-epic failures flow back into implement-epic; unresolved
+      questions flow back into brainstorm/write-spec. It iterates to confidence.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> این ستون فقرات کل ارائه است. هر بخش بعدی روی یکی از این گره‌ها زوم می‌کند. به حلقه توجه
+      کنید: شکست‌های verify-epic به implement-epic بازمی‌گردند؛ پرسش‌های حل‌نشده به
+      brainstorm/write-spec بازمی‌گردند. تا رسیدن به اطمینان تکرار می‌شود.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>The framework, assembled</h2>
+    <div class="grid4">
+      <div class="card"><h3>Skills</h3><p>brainstorm · write-spec · implement-epic · verify-epic · init-docs</p></div>
+      <div class="card"><h3>Knowledge</h3><p>_architecture-reference · _coding-guidelines · _ux-reference</p></div>
+      <div class="card"><h3>Advisors</h3><p>architecture · ux · codestyle</p></div>
+      <div class="card"><h3>Docs</h3><p>domain-index · domain-&lt;name&gt;</p></div>
+    </div>
+    <p class="subtle center">Everything lives in <code>.github/</code> and <code>docs/</code> — versioned with the code.</p>
+    <aside class="notes">
+      Preview the four pillars. The rest of the talk is a guided tour of each. Stress:
+      these are *committed* to the repo, reviewed in PRs, and shared by the whole team and
+      every agent. That's what makes it engineering, not improvisation.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> چهار ستون را پیش‌نمایش بدهید. باقی ارائه یک تور راهنمای هر کدام است. تأکید: این‌ها در
+      مخزن (Repo) کامیت می‌شوند، در PRها بازبینی می‌شوند، و توسط کل تیم و همهٔ عامل‌ها به
+      اشتراک گذاشته می‌شوند. همین آن را مهندسی می‌کند، نه بداهه‌پردازی.</div>
+  </aside>
+  </section>
+</section>
+
+<!-- ===================== 5. SKILL: BRAINSTORM ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 30% 30%, #1d1530 0%, #0d1117 60%)">
+    <span class="kicker">Skill 1 of 5</span>
+    <h2>🧠 <span class="grad">brainstorm</span></h2>
+    <p class="subtle">Turn a fuzzy idea into an Epic PRD with a measurable confidence level.</p>
+    <div class="card" style="margin-top:.5em">
+      <h3>PRD = Product Requirements Document</h3>
+      <p class="tiny">A concise, versioned document stating <b>what</b> to build and <b>why</b> — the problem, goals, requirements and acceptance criteria. An <b>Epic PRD</b> scopes one large feature (epic) and is the source of truth the whole SDD loop builds on.</p>
+    </div>
+    <aside class="notes">
+      brainstorm is where ambiguity goes to die. It produces the Epic PRD and drives a
+      structured Q&A loop until the AI is ≥90% confident it understands the intent.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> brainstorm جایی است که ابهام می‌میرد. این مهارت، PRD اپیک را تولید می‌کند و یک حلقهٔ
+      ساختاریافتهٔ پرسش‌وپاسخ را پیش می‌برد تا هوش مصنوعی دست‌کم ۹۰٪ از درک منظور مطمئن شود.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>brainstorm · workflow</h2>
+    <ol class="tight">
+      <li>Create an <b>Epic PRD</b> if one doesn't exist.</li>
+      <li>Put a <b>confidence level</b> in the PRD header.</li>
+      <li>At the end, ask <b>clarifying questions</b> until confidence ≥ 90%.</li>
+      <li>On re-run: <b>reconcile</b> answers into statements, requirements &amp; ACs; remove resolved questions; keep an <b>iteration log</b>.</li>
+      <li>Keep generating high-impact questions until ≥ 90%.</li>
+    </ol>
+    <aside class="notes">
+      The magic is the loop + reconciliation. You never lose context: answered questions
+      become durable requirements and ACs, the PRD's confidence climbs, and an iteration
+      log records how you got there. This is the antidote to "context lost each session."
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> جادو در حلقه + تطبیق (Reconciliation) است. هرگز زمینه را از دست نمی‌دهی: پرسش‌های
+      پاسخ‌داده‌شده به الزامات و معیارهای پذیرش پایدار تبدیل می‌شوند، اطمینان PRD بالا می‌رود
+      و گزارش تکرار ثبت می‌کند که چطور به اینجا رسیدیم. این پادزهر «از دست رفتن زمینه» است.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>The question format</h2>
+    <pre><code class="markdown" data-trim data-noescape>### Q3. How should sessions expire? (confidence impact: HIGH)
+- [ ] a) Never — sessions are permanent
+- [ ] b) Fixed 24h TTL  **(Recommended)**
+- [ ] c) Sliding window, refresh on activity
+- [ ] d) Configurable per-tenant
+
+> Mark your choice with an `x`, e.g. `- [x] b)`
+</code></pre>
+    <ul class="tight">
+      <li>Exactly <b>4 options</b>.</li>
+      <li>One marked <b>Recommended</b> — but <em>not</em> pre-selected.</li>
+      <li>User answers by marking <code>x</code>.</li>
+    </ul>
+    <aside class="notes">
+      Why this exact format? Four options forces the agent to think through real
+      alternatives. "Recommended but not selected" gives guidance without removing your
+      agency. The x-mark is trivially parseable on re-run. Consistency = automatability.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> چرا دقیقاً همین قالب؟ چهار گزینه عامل را وادار می‌کند به بدیل‌های واقعی فکر کند.
+      «پیشنهادشده ولی انتخاب‌نشده» راهنمایی می‌دهد بدون اینکه اختیار را از تو بگیرد. علامت x
+      در اجرای مجدد به‌سادگی قابل‌تجزیه است. یکدستی یعنی خودکارسازی‌پذیری.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>PRD header — confidence in the open</h2>
+    <pre><code class="markdown" data-trim data-noescape>---
+epic: checkout-redesign
+confidence: 72%   # &lt; 90% → more questions remain
+status: drafting
+iteration: 3
+---
+</code></pre>
+    <p class="subtle">Confidence is a first-class, visible signal — not a vibe.</p>
+    <aside class="notes">
+      Making confidence explicit and numeric changes behavior. The team can see at a glance
+      whether an epic is ready to spec. Under 90% means "keep asking." It also gives you a
+      natural stopping rule instead of endless prompting.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> آشکار و عددی‌کردن اطمینان، رفتار را تغییر می‌دهد. تیم در یک نگاه می‌بیند که آیا اپیک
+      آمادهٔ نوشتن مشخصات هست یا نه. کمتر از ۹۰٪ یعنی «به پرسیدن ادامه بده». همچنین یک قانون
+      توقف طبیعی به‌جای پرامپت‌زدن بی‌پایان می‌دهد.</div>
+  </aside>
+  </section>
+</section>
+
+<!-- ===================== 6. SKILL: WRITE-SPEC ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 30% 30%, #15233b 0%, #0d1117 60%)">
+    <span class="kicker">Skill 2 of 5</span>
+    <h2>📐 <span class="grad">write-spec</span></h2>
+    <p class="subtle">Input: <b>Epic Name</b>. Output: a TDD-ready technical specification.</p>
+    <aside class="notes">
+      write-spec consumes the PRD and produces the engineering blueprint: architecture,
+      design, testing strategy and an exact implementation plan — all traceable to ACs.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> write-spec، PRD را مصرف می‌کند و نقشهٔ مهندسی را تولید می‌کند: معماری، طراحی، راهبرد
+      تست و یک برنامهٔ پیاده‌سازی دقیق — همه قابل‌ردیابی به معیارهای پذیرش.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>write-spec · workflow</h2>
+    <ol class="tight">
+      <li>Read the <b>Epic PRD</b>.</li>
+      <li>Create a detailed <b>technical spec</b> covering all requirements &amp; ACs.</li>
+      <li>Follow a <b>TDD</b> approach.</li>
+      <li>Ensure every AC is covered by <b>architecture · design · testing strategy · implementation plan</b>.</li>
+      <li>Produce an <b>exact, step-by-step</b> implementation plan for developers.</li>
+    </ol>
+    <aside class="notes">
+      Key word: *exact*. The plan should be runnable by a developer (or implement-epic)
+      without re-deciding architecture. Every AC must trace to a section of the spec — no
+      orphan requirements, no untested ACs.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> واژهٔ کلیدی: «دقیق». برنامه باید توسط یک توسعه‌دهنده (یا implement-epic) بدون
+      تصمیم‌گیری مجدد دربارهٔ معماری قابل‌اجرا باشد. هر معیار پذیرش باید به بخشی از مشخصات
+      ردیابی شود — نه الزام یتیم، نه معیار تست‌نشده.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>Same loop — architecture decisions</h2>
+    <ul class="tight">
+      <li>At the end, ask <b>architecture &amp; technical-decision</b> questions.</li>
+      <li>Each: <b>4 options</b>, one <b>Recommended</b> (not selected).</li>
+      <li>On re-run: reconcile answers into <b>architecture decisions</b>, remove resolved questions, keep an <b>iteration log</b>.</li>
+      <li>Continue until <b>confidence ≥ 90%</b>.</li>
+    </ul>
+    <p class="subtle">Same proven mechanic as <code>brainstorm</code> — applied to technical choices.</p>
+    <aside class="notes">
+      Reuse the brainstorm pattern, now for technical decisions: datastore, sync vs async,
+      API shape, etc. The reconciliation produces an Architecture Decision log inside the
+      spec — your future ADRs, written as you go.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> الگوی brainstorm را دوباره به کار می‌بریم، این بار برای تصمیم‌های فنی: پایگاه‌داده،
+      همگام در برابر ناهمگام، شکل API و غیره. تطبیق، یک گزارش تصمیم معماری (ADR) درون مشخصات
+      تولید می‌کند — یعنی ADRهای آینده‌ات، همان لحظه که پیش می‌روی نوشته می‌شوند.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>AC → traceability matrix</h2>
+    <table class="cmp small">
+      <thead><tr><th>AC</th><th>Architecture</th><th>Test</th><th>Plan step</th></tr></thead>
+      <tbody>
+        <tr><td>AC-1</td><td>§2 AuthService <span class="tiny">@Service</span></td><td>AuthServiceTest · login</td><td>Step 4</td></tr>
+        <tr><td>AC-2</td><td>§3 TokenStore <span class="tiny">@Repository</span></td><td>TokenStoreTest · expiry</td><td>Step 6</td></tr>
+        <tr><td>AC-3</td><td>§4 RateLimiter <span class="tiny">Filter</span></td><td>RateLimitIT · 429</td><td>Step 9</td></tr>
+      </tbody>
+    </table>
+    <p class="subtle">If a row is empty, the spec isn't done.</p>
+    <aside class="notes">
+      This matrix is the contract between write-spec and verify-epic. Later, verify-epic
+      walks exactly these rows and reports PASS/PARTIAL/FAIL. Empty cells = gaps you catch
+      *before* writing code.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> این ماتریس قرارداد میان write-spec و verify-epic است. بعداً verify-epic دقیقاً همین
+      سطرها را می‌پیماید و PASS/PARTIAL/FAIL گزارش می‌دهد. خانه‌های خالی = شکاف‌هایی که
+      *پیش از* نوشتن کد می‌گیری.</div>
+  </aside>
+  </section>
+</section>
+
+<!-- ===================== 7. SKILL: IMPLEMENT-EPIC ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 30% 30%, #102a22 0%, #0d1117 60%)">
+    <span class="kicker">Skill 3 of 5</span>
+    <h2>⚙️ <span class="grad">implement-epic</span></h2>
+    <p class="subtle">Input: <b>Epic Name</b>. Builds the epic TDD-style, then verifies it.</p>
+    <aside class="notes">
+      This is where code gets written — but in a disciplined order. Tests first, then
+      functionality, then coverage validation, then fixing, then verification, then a
+      report. Six steps.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> اینجا کد نوشته می‌شود — اما با ترتیبی منظم. اول تست‌ها، سپس کارکرد، سپس اعتبارسنجی
+      پوشش، سپس رفع خطا، سپس راستی‌آزمایی، و در پایان یک گزارش. شش گام.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>implement-epic · 6 steps</h2>
+    <div class="steps">
+      <div><b>1 · Tests</b><span>Write tests first, per spec &amp; TDD</span></div>
+      <div><b>2 · Functionality</b><span>Build to requirements, ACs &amp; spec</span></div>
+      <div><b>3 · Validate coverage</b><span>Every AC has impl + tests + passing run</span></div>
+      <div><b>4 · Fix failures</b><span>Fix impl, re-run <em>relevant</em> tests, repeat</span></div>
+      <div><b>5 · Verify</b><span>Run <code>verify-epic</code></span></div>
+      <div><b>6 · Report</b><span>Full implementation report</span></div>
+    </div>
+    <aside class="notes">
+      Step 4 loops until relevant tests pass — note "relevant," not the whole suite (speed).
+      Step 5 hands off to the verification skill as the gate. Step 6 produces an auditable
+      report. Walk each box briefly.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> گام ۴ تا عبور تست‌های مرتبط تکرار می‌شود — توجه کنید «مرتبط»، نه کل مجموعه (برای
+      سرعت). گام ۵ به مهارت راستی‌آزمایی به‌عنوان دروازه تحویل می‌دهد. گام ۶ یک گزارش
+      قابل‌ممیزی تولید می‌کند. هر جعبه را کوتاه توضیح دهید.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>The implementation report</h2>
+    <div class="two-col">
+      <ul class="tight">
+        <li>✅ Implemented requirements</li>
+        <li>🎯 AC coverage</li>
+        <li>🧪 Test results</li>
+      </ul>
+      <ul class="tight">
+        <li>⚠️ Remaining risks</li>
+        <li>📊 Confidence level</li>
+      </ul>
+    </div>
+    <p class="subtle">A reviewable artifact — not "trust me, it works."</p>
+    <aside class="notes">
+      The report is what a reviewer reads first. It turns "the agent did stuff" into a
+      structured claim with evidence and an honest confidence number, including remaining
+      risks. This is how you review agent work at scale.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> گزارش، اولین چیزی است که بازبین می‌خواند. «عامل یک کارهایی کرد» را به یک ادعای
+      ساختاریافته با شواهد و یک عدد اطمینان صادقانه — شامل ریسک‌های باقیمانده — تبدیل می‌کند.
+      این‌طور می‌توان کار عامل را در مقیاس بازبینی کرد.</div>
+  </aside>
+  </section>
+</section>
+
+<!-- ===================== 8. SKILL: VERIFY-EPIC ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 30% 30%, #2a1a2e 0%, #0d1117 60%)">
+    <span class="kicker">Skill 4 of 5</span>
+    <h2>✅ <span class="grad">verify-epic</span></h2>
+    <p class="subtle">Input: <b>Epic Name</b>. The independent gate that proves the work.</p>
+    <aside class="notes">
+      verify-epic is deliberately separate from implement-epic — separation of "doing" and
+      "checking." It validates AC↔test coverage, runs the epic's tests, checks spec
+      compliance, and emits a verdict per AC.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> verify-epic عمداً از implement-epic جداست — جداسازی «انجام‌دادن» و «بررسی‌کردن». پوشش
+      معیار↔تست را اعتبارسنجی می‌کند، تست‌های اپیک را اجرا می‌کند، انطباق با مشخصات را بررسی
+      می‌کند و برای هر معیار یک حکم صادر می‌کند.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>verify-epic · workflow</h2>
+    <ol class="tight">
+      <li>Validate every AC has <b>at least one test</b>.</li>
+      <li>Execute tests <b>relevant to the Epic</b>.</li>
+      <li>Verify <b>implementation coverage</b> against ACs.</li>
+      <li>Validate <b>specification compliance</b>.</li>
+      <li>Produce a <b>verification report</b>.</li>
+    </ol>
+    <aside class="notes">
+      Note step 1 is structural (does a test even exist for each AC?) before step 2 runs
+      them. You can fail verification because an AC is *untested*, even if all existing
+      tests pass. That closes a classic blind spot.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> توجه کنید گام ۱ ساختاری است (آیا اصلاً برای هر معیار تستی وجود دارد؟) پیش از آنکه گام ۲
+      آن‌ها را اجرا کند. می‌توانی به‌دلیل *تست‌نشده‌بودن* یک معیار در راستی‌آزمایی مردود شوی،
+      حتی اگر همهٔ تست‌های موجود سبز باشند. این یک نقطه‌کور کلاسیک را می‌بندد.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>Per-AC verdict</h2>
+    <table class="cmp small">
+      <thead><tr><th>AC</th><th>Verdict</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>AC-1 Login</td><td class="pass">PASS</td><td>impl + 3 JUnit tests green</td></tr>
+        <tr><td>AC-2 Expiry</td><td class="part">PARTIAL</td><td>impl present, edge case untested</td></tr>
+        <tr><td>AC-3 Rate limit</td><td class="fail">FAIL</td><td>no implementation</td></tr>
+      </tbody>
+    </table>
+    <p class="subtle">Report also lists: missing tests · missing implementation · risks · recommendations.</p>
+    <aside class="notes">
+      Three states, not two. PARTIAL is the honest middle that vibe coding hides. The
+      report's recommendations feed straight back into implement-epic's fix loop. This is
+      the verifiable "definition of done" we promised in Part 1.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> سه حالت، نه دو حالت. PARTIAL همان میانهٔ صادقانه‌ای است که کدنویسی شهودی پنهانش می‌کند.
+      توصیه‌های گزارش مستقیم به حلقهٔ رفع خطای implement-epic بازمی‌گردند. این همان «تعریف
+      انجام‌شده»ی راستی‌آزمایی‌پذیری است که در بخش ۱ وعده دادیم.</div>
+  </aside>
+  </section>
+</section>
+
+<!-- ===================== 9. VERIFICATION INTEGRATION + PLAYWRIGHT ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 50% 25%, #15233b 0%, #0d1117 60%)">
+    <span class="kicker">Wiring it together</span>
+    <h2>Verification <span class="grad">integration</span></h2>
+    <aside class="notes">
+      Two rules make verification fast during dev but thorough at the gate.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> دو قاعده، راستی‌آزمایی را در حین توسعه سریع و سرِ دروازه دقیق می‌کند.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>Two-speed verification</h2>
+    <div class="two-col">
+      <div class="card good">
+        <h3>During implementation</h3>
+        <ul><li>Run <b>only relevant</b> tests</li><li><code>mvn -Dtest=AuthServiceTest test</code></li><li>No full-suite cost</li></ul>
+      </div>
+      <div class="card">
+        <h3>Final verification</h3>
+        <ul><li><b>Complete</b> epic validation — <code>mvn verify</code></li><li><b>End-to-end</b> verification</li><li><code>verify-epic</code> is the last step of <code>implement-epic</code></li></ul>
+      </div>
+    </div>
+    <aside class="notes">
+      The tension: TDD needs fast loops, but a gate needs full confidence. Resolve it by
+      scoping tests during the loop and going full + E2E only at the final gate. verify-epic
+      is wired as implement-epic's terminal step so you can't "forget" to verify.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> تنش: TDD به حلقه‌های سریع نیاز دارد، اما دروازه به اطمینان کامل. حلش با محدودکردن
+      دامنهٔ تست‌ها در حلقه و رفتن به حالت کامل + سرتاسری فقط سرِ دروازهٔ نهایی است.
+      verify-epic به‌عنوان گام پایانی implement-epic سیم‌کشی شده تا نتوانی راستی‌آزمایی را
+      «فراموش» کنی.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>🎭 Playwright integration</h2>
+    <ol class="tight">
+      <li>Install <b>Playwright MCP</b> in the project.</li>
+      <li>Configure <b>E2E testing</b> — tests with <b>Playwright for Java</b> alongside JUnit.</li>
+      <li>Enable browser automation for E2E tests, verification workflows &amp; user-journey validation.</li>
+      <li>Make Playwright <b>available to <code>verify-epic</code></b>.</li>
+    </ol>
+    <p class="subtle">Now verification can drive a real browser — not just unit tests.</p>
+    <aside class="notes">
+      Playwright MCP lets the verification agent actually click through the app and confirm
+      user journeys. ACs about UX/flows become executable. This is how verify-epic graduates
+      from "tests pass" to "the user journey works."
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> Playwright MCP اجازه می‌دهد عامل راستی‌آزمایی واقعاً در اپ کلیک کند و سفرهای کاربر را
+      تأیید کند. معیارهای پذیرش مربوط به تجربهٔ کاربری/جریان‌ها قابل‌اجرا می‌شوند. این‌طور
+      verify-epic از «تست‌ها پاس می‌شوند» به «سفر کاربر کار می‌کند» ارتقا می‌یابد.</div>
+  </aside>
+  </section>
+</section>
+
+<!-- ===================== 10. PROJECT KNOWLEDGE SYSTEM ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 30% 25%, #1d1530 0%, #0d1117 60%)">
+    <span class="kicker">Part 4 · Project Knowledge</span>
+    <h2>Persistent <span class="grad">project knowledge</span></h2>
+    <p class="subtle">Stop re-explaining your codebase every session.</p>
+    <aside class="notes">
+      Three concise, committed reference files give every skill and agent shared context.
+      Generated by analyzing the codebase, kept implementation-focused, reviewed in PRs.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> سه فایل مرجع کوتاه و کامیت‌شده، به هر مهارت و عامل زمینهٔ مشترک می‌دهند. با تحلیل کدبیس
+      تولید می‌شوند، پیاده‌سازی‌محور می‌مانند و در PRها بازبینی می‌شوند.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>Three reference files in <code>.github/</code></h2>
+    <div class="grid3">
+      <div class="card">
+        <h3>_architecture-reference.md</h3>
+        <ul class="tiny"><li>System architecture</li><li>Major design decisions</li><li>Constraints</li><li>Dev patterns</li><li>Key dependencies</li></ul>
+      </div>
+      <div class="card">
+        <h3>_coding-guidelines.md</h3>
+        <ul class="tiny"><li>Coding style</li><li>Naming conventions</li><li>Testing conventions</li><li>Design patterns</li><li>Project practices</li></ul>
+      </div>
+      <div class="card">
+        <h3>_ux-reference.md</h3>
+        <ul class="tiny"><li>Brand guidelines</li><li>Design system</li><li>Color palette</li><li>Component usage</li><li>UX &amp; a11y standards</li></ul>
+      </div>
+    </div>
+    <p class="subtle center">Generated from the codebase · kept concise · versioned.</p>
+    <aside class="notes">
+      Concise is a feature — these are loaded into context, so brevity matters. They're
+      generated by analyzing the real code, not aspirational. Each maps to one advisory
+      agent on the next slide.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> کوتاه‌بودن یک ویژگی است — این‌ها در زمینه (Context) بارگذاری می‌شوند، پس اختصار مهم
+      است. با تحلیل کد واقعی تولید می‌شوند، نه آرمانی. هر کدام در اسلاید بعد به یک عامل مشاور
+      نگاشت می‌شود.</div>
+  </aside>
+  </section>
+</section>
+
+<!-- ===================== 11. ADVISORY AGENTS ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 30% 25%, #102a22 0%, #0d1117 60%)">
+    <span class="kicker">Part 5 · Advisors</span>
+    <h2>Advisory <span class="grad">agents</span></h2>
+    <p class="subtle">Specialists that weigh in at the right moments.</p>
+    <aside class="notes">
+      Each advisor reads one reference file and participates across the whole lifecycle —
+      brainstorming, spec, implementation, verification — surfacing domain recommendations
+      when relevant decisions arise.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> هر مشاور یک فایل مرجع را می‌خواند و در سراسر چرخهٔ حیات مشارکت می‌کند — طوفان فکری،
+      مشخصات، پیاده‌سازی، راستی‌آزمایی — و هرگاه تصمیم مرتبطی پیش بیاید، توصیهٔ دامنه‌ای ارائه
+      می‌دهد.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>Three advisors, three lenses</h2>
+    <div class="grid3">
+      <div class="card">
+        <h3>architecture-advisor</h3>
+        <p class="tiny">Uses <code>_architecture-reference.md</code></p>
+        <ul class="tiny"><li>Architecture decisions</li><li>Scalability</li><li>Performance</li><li>System boundaries</li></ul>
+      </div>
+      <div class="card">
+        <h3>ux-advisor</h3>
+        <p class="tiny">Uses <code>_ux-reference.md</code></p>
+        <ul class="tiny"><li>User experience</li><li>Accessibility</li><li>Design consistency</li></ul>
+      </div>
+      <div class="card">
+        <h3>codestyle-advisor</h3>
+        <p class="tiny">Uses <code>_coding-guidelines.md</code></p>
+        <ul class="tiny"><li>Code quality</li><li>Style compliance</li><li>Best practices</li></ul>
+      </div>
+    </div>
+    <aside class="notes">
+      They participate during all four phases. Think of them as always-available senior
+      reviewers who never get tired and always cite the same shared standard. That keeps
+      decisions consistent across epics and across developers.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> آن‌ها در هر چهار فاز مشارکت می‌کنند. مثل بازبین‌های ارشدی که همیشه در دسترس‌اند، هرگز
+      خسته نمی‌شوند و همیشه به همان استاندارد مشترک ارجاع می‌دهند. این، تصمیم‌ها را میان
+      اپیک‌ها و توسعه‌دهندگان یکدست نگه می‌دارد.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>Where advisors plug in</h2>
+    <div class="flow small">
+      <div class="node">brainstorm</div><span class="arrow">→</span>
+      <div class="node">write-spec</div><span class="arrow">→</span>
+      <div class="node">implement-epic</div><span class="arrow">→</span>
+      <div class="node">verify-epic</div>
+    </div>
+    <p class="subtle center">🏛️ architecture · 🎨 ux · 🧹 codestyle — consulted at every relevant decision.</p>
+    <aside class="notes">
+      Visually reinforce: advisors aren't a phase, they're a cross-cutting concern present
+      throughout. When a domain-relevant decision arises, the matching advisor offers a
+      recommendation grounded in the reference file.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> به‌صورت بصری تأکید کنید: مشاوران یک فاز نیستند، یک دغدغهٔ عرضی (Cross-cutting) حاضر در
+      سراسر کارند. هرگاه تصمیم مرتبط با دامنه‌ای پیش بیاید، مشاور متناظر توصیه‌ای مبتنی بر
+      فایل مرجع ارائه می‌دهد.</div>
+  </aside>
+  </section>
+</section>
+
+<!-- ===================== 12. DOCUMENTATION SYSTEM ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 30% 25%, #15233b 0%, #0d1117 60%)">
+    <span class="kicker">Part 6 · Documentation</span>
+    <h2>📚 <span class="grad">init-docs &lt;domain&gt;</span></h2>
+    <p class="subtle">Domain-driven documentation, generated from the code.</p>
+    <aside class="notes">
+      init-docs analyzes the codebase, identifies a domain, and generates living
+      domain-driven docs. This becomes a primary knowledge source agents consult before any
+      work.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> init-docs کدبیس را تحلیل می‌کند، یک دامنه را شناسایی می‌کند و مستندات دامنه‌محورِ زنده
+      تولید می‌کند. این به یک منبع دانش اصلی تبدیل می‌شود که عامل‌ها پیش از هر کاری به آن
+      مراجعه می‌کنند.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>init-docs · workflow</h2>
+    <ol class="tight">
+      <li>Analyze the codebase.</li>
+      <li>Identify the <b>domain</b>.</li>
+      <li>Discover relevant <b>code · APIs · tests · components</b>.</li>
+      <li>Generate <b>domain-driven documentation</b>.</li>
+    </ol>
+    <pre><code class="bash" data-trim>docs/
+├── domain-index.md        # navigation map + short domain descriptions
+└── domain-&lt;name&gt;.md       # full domain documentation</code></pre>
+    <aside class="notes">
+      Input is just a domain name. Output is a navigable index plus a detailed per-domain
+      file. The index is the entry point agents use to orient before planning work.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> ورودی فقط یک نام دامنه است. خروجی یک فهرست قابل‌پیمایش به‌علاوهٔ یک فایل تفصیلی برای هر
+      دامنه است. فهرست، نقطهٔ ورودی است که عامل‌ها پیش از برنامه‌ریزی کار برای جهت‌یابی از آن
+      استفاده می‌کنند.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>Inside <code>domain-&lt;name&gt;.md</code></h2>
+    <div class="grid2">
+      <div class="card"><h3>Domain Model</h3><p class="tiny">Entities · Value Objects · Aggregates</p></div>
+      <div class="card"><h3>API Endpoints</h3><p class="tiny">Requests · Responses · Contracts</p></div>
+      <div class="card"><h3>Key Behaviors</h3><p class="tiny">Business rules · Workflows</p></div>
+      <div class="card"><h3>Key Components</h3><p class="tiny">Services · Controllers · Repositories · UI</p></div>
+      <div class="card wide"><h3>Features</h3><p class="tiny">For each feature: description + acceptance criteria</p></div>
+    </div>
+    <aside class="notes">
+      This mirrors DDD: model, contracts, behaviors, components, and features with ACs. Note
+      features carry ACs too — so documentation and the SDD loop speak the same language.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> این، DDD را بازتاب می‌دهد: مدل، قراردادها، رفتارها، کامپوننت‌ها و قابلیت‌ها با معیارهای
+      پذیرش. توجه کنید قابلیت‌ها هم معیار پذیرش دارند — پس مستندسازی و حلقهٔ SDD به یک زبان
+      صحبت می‌کنند.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>Documentation integration</h2>
+    <p>Wire <code>docs/domain-index.md</code> into Copilot instructions &amp; agent config.</p>
+    <p class="subtle">Agents consult domain docs when they:</p>
+    <div class="chips">
+      <span>plan work</span><span>create specs</span><span>implement features</span>
+      <span>verify</span><span>make domain decisions</span>
+    </div>
+    <p class="big center">Documentation = a <span class="grad">primary</span> knowledge source.</p>
+    <aside class="notes">
+      The final wiring step: reference the domain index from Copilot's instructions so every
+      agent treats docs as authoritative, not optional. This closes the loop — knowledge
+      flows into every phase of the lifecycle.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> گام سیم‌کشی نهایی: از دستورالعمل‌های Copilot به فهرست دامنه ارجاع بده تا هر عامل
+      مستندات را معتبر بداند، نه اختیاری. این حلقه را می‌بندد — دانش به هر فاز چرخهٔ حیات
+      جریان می‌یابد.</div>
+  </aside>
+  </section>
+</section>
+
+<!-- ===================== 13. LIVE DEMO ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 50% 25%, #2a1a2e 0%, #0d1117 60%)">
+    <span class="kicker">Part 7 · Live Demo</span>
+    <h2>End-to-end <span class="grad">in action</span></h2>
+    <p class="subtle">One epic, four skills, three advisors.</p>
+    <aside class="notes">
+      Demo time. If the live demo risks running long, narrate from these slides as a
+      fallback. Pick a small, real epic so the loop completes inside ~8 minutes.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> زمان دمو. اگر دموی زنده ریسک طولانی‌شدن دارد، از این اسلایدها روایت کنید. یک اپیک کوچک و
+      واقعی انتخاب کنید تا حلقه در حدود ۸ دقیقه کامل شود.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>Demo script</h2>
+    <ol class="tight demo">
+      <li><code>brainstorm</code> → draft Epic PRD, answer 2–3 questions, watch confidence climb to ≥90%.</li>
+      <li><code>write-spec "auth"</code> → spec + AC traceability + architecture questions (e.g. Spring Security vs custom filter).</li>
+      <li><code>implement-epic "auth"</code> → JUnit tests first, then @Service code, fix loop.</li>
+      <li><code>verify-epic "auth"</code> → per-AC PASS / PARTIAL / FAIL + report.</li>
+      <li>Show an advisor recommendation firing mid-decision.</li>
+    </ol>
+    <aside class="notes">
+      Talk through what to point at on screen: the confidence header changing, the x-marked
+      answers being reconciled into ACs, tests appearing before code, and the per-AC verdict
+      table. End on the report.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> توضیح دهید روی صفحه به چه چیزی اشاره کنید: تغییر سرآیند اطمینان، تطبیق پاسخ‌های علامت‌دار
+      x به معیارهای پذیرش، ظاهرشدن تست‌ها پیش از کد، و جدول حکم هر معیار. روی گزارش تمام کنید.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>What just happened</h2>
+    <ul class="tight">
+      <li>An idea became a <b>versioned, verifiable epic</b>.</li>
+      <li>Every AC is <b>traceable</b> from PRD → spec → test → verdict.</li>
+      <li>Decisions were <b>logged</b>, not lost.</li>
+      <li>The human <b>directed and reviewed</b> — the agents engineered.</li>
+    </ul>
+    <aside class="notes">
+      Land the contrast with Part 1: no eyeballing, no lost context, no "looks right." A
+      durable trail from intent to proof. This is the payoff of the whole system.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> تضاد با بخش ۱ را برجسته کنید: نه بازبینی چشمی، نه زمینهٔ ازدست‌رفته، نه «درست به‌نظر
+      می‌رسد». یک ردِ پایدار از قصد تا اثبات. این پاداش کل سامانه است.</div>
+  </aside>
+  </section>
+</section>
+
+<!-- ===================== 14. ANTI-PATTERNS ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 30% 25%, #2a1a1a 0%, #0d1117 60%)">
+    <span class="kicker">Part 8 · Pitfalls</span>
+    <h2>Anti-patterns <span class="grad">to avoid</span></h2>
+    <aside class="notes">
+      Quick gut-check list so teams don't reinvent vibe coding with extra steps.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> یک فهرست بررسی سریع تا تیم‌ها دوباره کدنویسی شهودی را با چند گام اضافه بازاختراع نکنند.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>Watch out for…</h2>
+    <table class="cmp small">
+      <thead><tr><th>Anti-pattern</th><th>Fix</th></tr></thead>
+      <tbody>
+        <tr><td>Spec theater — write spec, then ignore it</td><td>verify-epic against the spec</td></tr>
+        <tr><td>ACs that can't be tested</td><td>Rewrite as observable, testable outcomes</td></tr>
+        <tr><td>Skipping the question loop "to save time"</td><td>Low confidence = expensive rework later</td></tr>
+        <tr><td>Full-suite runs on every change</td><td>Relevant tests in the loop, full at the gate</td></tr>
+        <tr><td>Stale knowledge / docs</td><td>Regenerate; review in PRs</td></tr>
+        <tr><td>Trusting the report blindly</td><td>Report shows risks &amp; confidence — read them</td></tr>
+      </tbody>
+    </table>
+    <aside class="notes">
+      Each fix maps to something in the framework. The meta-point: the framework only works
+      if the spec stays the source of truth and verification stays honest.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> هر راه‌حل به چیزی در چارچوب نگاشت می‌شود. نکتهٔ فرامتنی: چارچوب فقط وقتی کار می‌کند که
+      مشخصات منبع حقیقت بماند و راستی‌آزمایی صادقانه بماند.</div>
+  </aside>
+  </section>
+</section>
+
+<!-- ===================== 15. ADOPTION ROADMAP ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 30% 25%, #102a22 0%, #0d1117 60%)">
+    <span class="kicker">Part 9 · Rollout</span>
+    <h2>Adoption <span class="grad">roadmap</span></h2>
+    <aside class="notes">
+      Don't boil the ocean. Stage adoption so the team feels value early.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> اقیانوس را به جوش نیاور. پذیرش را مرحله‌بندی کن تا تیم زود ارزش را حس کند.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>Crawl → Walk → Run</h2>
+    <p class="subtle">The idea: adopt the framework <b>in stages</b> — don't boil the ocean. Each phase delivers value on its own, so the team feels wins early and builds momentum toward full agentic engineering.</p>
+    <div class="steps">
+      <div><b>Week 1 · Crawl</b><span>Add the 3 knowledge files + <code>brainstorm</code>. Use on one epic.</span></div>
+      <div><b>Week 2–3 · Walk</b><span>Add <code>write-spec</code> + <code>implement-epic</code> + <code>verify-epic</code>. TDD on a real feature.</span></div>
+      <div><b>Week 4 · Run</b><span>Advisors + Playwright + <code>init-docs</code>. Wire docs into instructions.</span></div>
+      <div><b>Ongoing</b><span>Refine references, grow domain docs, review reports in PRs.</span></div>
+    </div>
+    <aside class="notes">
+      Crawl proves value with minimal setup. Walk introduces the full TDD loop. Run adds the
+      advisors, browser verification and living docs. Ongoing is where it compounds — every
+      epic makes the knowledge base richer.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> خزیدن با حداقل راه‌اندازی ارزش را اثبات می‌کند. راه‌رفتن حلقهٔ کامل TDD را معرفی می‌کند.
+      دویدن مشاوران، راستی‌آزمایی مرورگری و مستندات زنده را اضافه می‌کند. «پیوسته» جایی است
+      که اثرش انباشته می‌شود — هر اپیک پایگاه دانش را غنی‌تر می‌کند.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>Success signals</h2>
+    <ul class="tight">
+      <li>📉 Less rework &amp; fewer "that's not what I meant" cycles.</li>
+      <li>🔍 PR reviews start from a report, not a guess.</li>
+      <li>🧪 Every AC has a test — coverage by design.</li>
+      <li>🧠 New joiners ramp via knowledge + domain docs.</li>
+    </ul>
+    <aside class="notes">
+      Give the team measurable outcomes to track. If these aren't improving, revisit the
+      anti-patterns slide.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> به تیم نتایج قابل‌سنجش بدهید تا دنبال کنند. اگر این‌ها بهتر نمی‌شوند، به اسلاید
+      ضدالگوها برگردید.</div>
+  </aside>
+  </section>
+</section>
+
+<!-- ===================== 16. Q&A / CLOSE ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 50% 30%, #15233b 0%, #0d1117 60%)">
+    <span class="kicker">Part 10 · Discussion</span>
+    <h2>Q&amp;A &amp; <span class="grad">discussion</span></h2>
+    <ul class="tight">
+      <li>Where would SDD help <em>your</em> team most today?</li>
+      <li>Which epic would you pilot first?</li>
+      <li>What's your current "definition of done"?</li>
+      <li>Where do you still want vibe coding?</li>
+    </ul>
+    <aside class="notes">
+      Open the floor with concrete prompts. Tie answers back to the framework. Capture one
+      pilot epic per team before they leave the room — that's the call to action.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> با پرسش‌های مشخص باب گفت‌وگو را باز کنید. پاسخ‌ها را به چارچوب گره بزنید. پیش از خروج
+      افراد از اتاق، یک اپیک آزمایشی برای هر تیم ثبت کنید — این فراخوان به اقدام است.</div>
+  </aside>
+  </section>
+
+  <section data-background-gradient="radial-gradient(circle at 30% 20%, #15233b 0%, #0d1117 60%)">
+    <h1 class="grad">Thank you</h1>
+    <p class="subtle">From vibe coding → to agentic engineering.</p>
+    <p class="meta">Specs are the program. Verification is the proof.</p>
+    <div class="chips">
+      <span>brainstorm</span><span>write-spec</span><span>implement-epic</span><span>verify-epic</span><span>init-docs</span>
+    </div>
+    <aside class="notes">
+      Recap the five skills on screen, restate the thesis, and end on the call to action:
+      pick one epic this week and run it through the loop. Thank the audience.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> پنج مهارت را روی صفحه جمع‌بندی کنید، تز را دوباره بیان کنید و با فراخوان به اقدام تمام
+      کنید: این هفته یک اپیک انتخاب کنید و آن را از حلقه عبور دهید. از حضار تشکر کنید.</div>
+  </aside>
+  </section>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/markdown/markdown.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    slideNumber: 'c/t',
+    transition: 'slide',
+    backgroundTransition: 'fade',
+    width: 1280,
+    height: 720,
+    margin: 0.06,
+    plugins: [ RevealNotes, RevealHighlight, RevealMarkdown ]
+  });
+</script>
+</body>
+</html>

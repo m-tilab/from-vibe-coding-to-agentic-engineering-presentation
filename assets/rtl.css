@@ -1,0 +1,53 @@
+/* RTL + Persian overrides — loaded after theme.css, only on index-fa.html */
+
+.reveal{
+  font-family:"Vazirmatn",-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,sans-serif;
+}
+.reveal .slides{ text-align:right; }
+
+/* Persian numerals + comfortable line height */
+.reveal{ line-height:1.5; }
+.reveal h1,.reveal h2,.reveal h3{ line-height:1.3; }
+
+/* Keep code, pre and inline identifiers left-to-right */
+.reveal code,
+.reveal pre,
+.reveal pre code{ direction:ltr; text-align:left; unicode-bidi:embed; font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace; }
+/* inline code inside RTL text stays LTR but flows inline */
+.reveal p code,
+.reveal li code,
+.reveal td code,
+.reveal h2 code,
+.reveal .chips span,
+.reveal .card p,
+.reveal .flow .node,
+.reveal .steps>div b{ unicode-bidi:isolate; }
+
+/* tables: align to start (right) */
+table.agenda td,
+table.cmp th,
+table.cmp td{ text-align:right; }
+table.agenda td.t{ font-family:"Vazirmatn",monospace; }
+
+/* the time column should read naturally */
+table.agenda td.t{ direction:rtl; }
+
+/* lists: bullets/numbers on the right */
+.reveal ul,
+.reveal ol{ padding-right:1.1em; padding-left:0; }
+.reveal ol{ list-style-position:inside; }
+
+/* flow & spectrum already use explicit arrows (←) in markup; just allow wrap nicely */
+.flow,.spectrum{ direction:rtl; }
+
+/* blockquote border moves to the right edge */
+.reveal blockquote{ border-left:none; border-right:4px solid var(--accent2); }
+
+/* steps left accent bar -> right */
+.steps>div{ border-left:none; border-right:3px solid var(--accent); }
+
+/* kicker letter-spacing looks odd in Persian; relax it */
+.kicker{ letter-spacing:.04em; }
+
+/* numbered principles read better with inside markers in RTL */
+ol.principles{ list-style-position:inside; }

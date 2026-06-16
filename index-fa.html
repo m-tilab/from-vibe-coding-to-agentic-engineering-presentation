@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>از کدنویسی شهودی تا مهندسی عامل‌محور — توسعهٔ مبتنی بر مشخصات با GitHub Copilot</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css" id="theme">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/theme.css">
+  <link rel="stylesheet" href="assets/rtl.css">
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ===================== 0. عنوان ===================== -->
+<section data-background-gradient="radial-gradient(circle at 30% 20%, #15233b 0%, #0d1117 60%)">
+  <span class="kicker">☕ JavaTalk · کارگاه گیت‌هاب کوپایلوت</span>
+  <h1 class="grad">از کدنویسی شهودی<br>تا مهندسی عامل‌محور</h1>
+  <h3 class="subtle">یک چارچوب عملی توسعهٔ مبتنی بر مشخصات (Spec-Driven Development – SDD)</h3>
+  <p class="meta">جلسهٔ عملی ۹۰ دقیقه‌ای &nbsp;·&nbsp; ویژهٔ توسعه‌دهندگان Java / JVM</p>
+  <aside class="notes">
+    خوش آمدید به JavaTalk. امروز از «کدنویسی شهودی» (Vibe Coding) — یعنی بداهه‌پردازی با یک
+    دستیار هوش مصنوعی — به سمت «مهندسی عامل‌محور» (Agentic Engineering) حرکت می‌کنیم؛ روشی
+    منظم و مبتنی بر مشخصات که در آن عامل‌های هوش مصنوعی زیر نظارت و قاعده، کار مهندسی واقعی
+    انجام می‌دهند. مثال‌ها با پشتهٔ آشنای Java/Spring، تست با JUnit و AssertJ، و ساخت با
+    Maven/Gradle خواهند بود. در پایان دقیقاً می‌دانید کدام مهارت‌ها (Skills)، عامل‌ها (Agents)
+    و فایل‌های دانش را باید بسازید و چطور کنار هم می‌نشینند. انتظارات: ۹۰ دقیقه، تعاملی، با
+    دموی پایانی.
+  </aside>
+</section>
+
+<!-- ===================== 1. سرفصل ===================== -->
+<section>
+  <h2>سرفصل <span class="subtle">· ۹۰ دقیقه</span></h2>
+  <table class="agenda">
+    <tr><td class="t">۰–۱۰</td><td>مسئله: هزینهٔ واقعی «کدنویسی شهودی» (Vibe Coding)</td></tr>
+    <tr><td class="t">۱۰–۲۰</td><td>تغییر پارادایم: مهندسی عامل‌محور و SDD</td></tr>
+    <tr><td class="t">۲۰–۴۵</td><td>چهار مهارت اصلی: <code>brainstorm → write-spec → implement-epic → verify-epic</code></td></tr>
+    <tr><td class="t">۴۵–۵۵</td><td>یکپارچه‌سازی راستی‌آزمایی (Verification) و Playwright</td></tr>
+    <tr><td class="t">۵۵–۷۰</td><td>دانش پروژه و عامل‌های مشاور (Advisory Agents)</td></tr>
+    <tr><td class="t">۷۰–۸۰</td><td>سامانهٔ مستندسازی (<code>init-docs</code>)</td></tr>
+    <tr><td class="t">۸۰–۹۰</td><td>دموی زنده، نقشهٔ راه پذیرش و پرسش‌وپاسخ</td></tr>
+  </table>
+  <aside class="notes">
+    نقشهٔ کلی را مرور کنید. تأکید کنید این یک «سامانه» است، نه مجموعه‌ای پراکنده از
+    پرامپت‌ها. هر بخش روی بخش قبلی بنا می‌شود. حواستان به زمان باشد — تایمر سخنران در نمای
+    سخنران (کلید S) پایین صفحه است.
+  </aside>
+</section>
+
+<!-- ===================== 2. مسئله ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 70% 30%, #2a1a2e 0%, #0d1117 60%)">
+    <span class="kicker">بخش ۱ · مسئله</span>
+    <h2>«کدنویسی شهودی» (Vibe Coding) <span class="grad">چیست؟</span></h2>
+    <blockquote>«فقط بگو چه می‌خواهی و بگذار هوش مصنوعی پیش برود.»</blockquote>
+    <p class="subtle">سریع، جذاب و گفت‌وگومحور — و روزبه‌روز رایج‌تر در نگارش کد.</p>
+    <aside class="notes">
+      صادقانه و بدون قضاوت تعریفش کنید. کدنویسی شهودی یعنی: پرامپت بده، بپذیر، دوباره پرامپت
+      بده. نه مشخصاتی، نه تست‌محوری، نه تعریف مشترکی از «انجام‌شده» (Definition of Done). این
+      روش برای نمونهٔ اولیه، اسکریپت یکبارمصرف و یادگیری عالی است. مشکل آنجاست که این سبک به
+      یک کدبیس واقعی، یک تیم و محیط تولید (Production) برسد.
+    </aside>
+  </section>
+
+  <section>
+    <h2>کارنامهٔ صادقانهٔ کدنویسی شهودی</h2>
+    <div class="two-col">
+      <div class="card good">
+        <h3>✅ کجا می‌درخشد</h3>
+        <ul>
+          <li>نمونهٔ اولیه و آزمایش سریع (Prototype/Spike)</li>
+          <li>یادگیری یک API جدید</li>
+          <li>اسکریپت‌های یکبارمصرف</li>
+          <li>کاوش سریع یک ایده</li>
+        </ul>
+      </div>
+      <div class="card bad">
+        <h3>⚠️ کجا می‌شکند</h3>
+        <ul>
+          <li>نبود تعریف مشترک از «انجام‌شده»</li>
+          <li>خروجی تست‌نشده و راستی‌آزمایی‌ناپذیر</li>
+          <li>از دست رفتن زمینه (Context) بین جلسات</li>
+          <li>انحراف معماری و دوباره‌کاری</li>
+          <li>مقیاس‌پذیر نبودن در سطح تیم</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">
+      حالت شکست این نیست که «هوش مصنوعی کد بد می‌نویسد». مشکل این است که هیچ مصنوعی (Artifact)
+      وجود ندارد که بگوید «درست» یعنی چه. پس نمی‌توان راستی‌آزمایی کرد، نمی‌توان افراد را
+      وارد کار کرد، و نمی‌توان در مقیاس بازبینی کرد. هر جلسه از صفرِ زمینه شروع می‌شود. SDD
+      دقیقاً همین شکاف را پر می‌کند.
+    </aside>
+  </section>
+
+  <section>
+    <h2>شکاف اصلی</h2>
+    <p class="big">بدون <span class="grad">مشخصات (Spec)</span> ← بدون حقیقت مشترک ←<br>بدون راهی برای <span class="grad">راستی‌آزمایی</span>.</p>
+    <p class="subtle">اگر نتوانی معیارهای پذیرش (Acceptance Criteria) را بیان کنی، نه تو و نه عامل نمی‌توانید ثابت کنید کار تمام شده است.</p>
+    <aside class="notes">
+      این مهم‌ترین اسلاید بخش ۱ است. هر چه در ادامه می‌آید دربارهٔ ساختن یک منبع حقیقتِ
+      راستی‌آزمایی‌پذیر است — یعنی مشخصات و معیارهای پذیرش آن — و سپس سیم‌کشی عامل‌ها برای
+      تولید و بررسی در برابر آن.
+    </aside>
+  </section>
+</section>
+
+<!-- ===================== 3. تغییر پارادایم ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 30% 30%, #15233b 0%, #0d1117 60%)">
+    <span class="kicker">بخش ۲ · تغییر پارادایم</span>
+    <h2>مهندسی <span class="grad">عامل‌محور</span> (Agentic Engineering)</h2>
+    <p class="subtle">عامل‌های هوش مصنوعی کار مهندسی واقعی انجام می‌دهند — زیر قواعد صریح، در برابر مشخصات صریح، و با راستی‌آزمایی خودکار.</p>
+    <aside class="notes">
+      مهندسی عامل‌محور سرعت هوش مصنوعی را حفظ می‌کند ولی نظم مهندسی را اضافه می‌کند:
+      الزامات صریح، تست‌محوری (TDD)، دروازه‌های راستی‌آزمایی، دانش پایدار پروژه و مشاوران
+      تخصصی. نقش انسان از «تایپیست» به «کارگردان/بازبین» تغییر می‌کند.
+    </aside>
+  </section>
+
+  <section>
+    <h2>شهودی در برابر عامل‌محور — یک نگاه</h2>
+    <table class="cmp">
+      <thead><tr><th></th><th>کدنویسی شهودی</th><th>مهندسی عامل‌محور</th></tr></thead>
+      <tbody>
+        <tr><td>منبع حقیقت</td><td>رشتهٔ گفت‌وگو (Chat)</td><td>PRD و مشخصات نسخه‌بندی‌شده</td></tr>
+        <tr><td>تعریف «انجام‌شده»</td><td>«درست به‌نظر می‌رسد»</td><td>معیار پذیرش + تست</td></tr>
+        <tr><td>تست</td><td>شاید، بعداً</td><td>TDD، تست‌ها اول</td></tr>
+        <tr><td>راستی‌آزمایی</td><td>بازبینی چشمی دستی</td><td>خودکار با <code>verify-epic</code></td></tr>
+        <tr><td>زمینه (Context)</td><td>هر جلسه از دست می‌رود</td><td>فایل‌های دانش پایدار</td></tr>
+        <tr><td>تصمیم‌ها</td><td>ضمنی</td><td>ثبت‌شده + بازبینی مشاور</td></tr>
+        <tr><td>نقش انسان</td><td>پرامپت‌دهنده</td><td>کارگردان و بازبین</td></tr>
+      </tbody>
+    </table>
+    <aside class="notes">
+      سطر به سطر پیش بروید. ستون سمت چپ دقیقاً همان چارچوبی است که امروز می‌سازیم. هر سطر به
+      یک مصنوع یا مهارت نگاشت می‌شود: PRD (brainstorm)، مشخصات+معیار پذیرش (write-spec)،
+      TDD (implement-epic)، راستی‌آزمایی (verify-epic)، فایل‌های دانش و عامل‌های مشاور.
+    </aside>
+  </section>
+
+  <section>
+    <h2>یک طیف، نه یک کلید</h2>
+    <div class="spectrum">
+      <span>شهودی</span><span class="arrow">←</span>
+      <span>دستیارمحور</span><span class="arrow">←</span>
+      <span>مشخصات‌محور</span><span class="arrow">←</span>
+      <span class="grad">عامل‌محور</span>
+    </div>
+    <p class="subtle">کدنویسی شهودی را کنار نمی‌گذاری — وقتی ریسک پایین است از آن استفاده می‌کنی، و وقتی ریسک بالاست به SDD تکیه می‌کنی.</p>
+    <aside class="notes">
+      به توسعه‌دهندگان عملی اطمینان بدهید: کدنویسی شهودی هنوز جایگاه دارد. مهارت این است که
+      بدانی کار سزاوار کدام حالت است. SDD ساختاری است که وقتی کد باید زنده بماند، منتشر شود
+      و توسط دیگران نگه‌داری شود، سراغش می‌روی.
+    </aside>
+  </section>
+</section>
+
+<!-- ===================== 4. SDD چیست ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 50% 20%, #102a22 0%, #0d1117 60%)">
+    <span class="kicker">بخش ۳ · روش</span>
+    <h2>توسعهٔ مبتنی بر مشخصات <span class="grad">(SDD)</span></h2>
+    <p class="subtle">مشخصات همان برنامه است. کد، هدفِ کامپایل است. عامل‌ها کامپایل — و بررسی — را انجام می‌دهند.</p>
+    <aside class="notes">
+      مدل ذهنی: در SDD «مشخصات» همان مصنوع پایداری است که نگه‌داری می‌کنی. کد در برابر آن
+      تولید و بازتولید می‌شود. معیارهای پذیرش، قرارداد هستند. این، رابطهٔ معمول «کد حقیقت
+      است و مستندات می‌پوسد» را وارونه می‌کند.
+    </aside>
+  </section>
+
+  <section>
+    <h2>چهار اصل SDD</h2>
+    <ol class="principles">
+      <li><b>مشخصات پیش از کد.</b> یک PRD و مشخصات فنی پیش از پیاده‌سازی وجود دارد.</li>
+      <li><b>معیارهای پذیرش، قرارداد هستند.</b> هر معیار، تست‌پذیر و قابل‌ردیابی است.</li>
+      <li><b>تست‌ها اول (TDD).</b> تست‌ها پیش از پیاده‌سازی، معیارهای پذیرش را رمزگذاری می‌کنند.</li>
+      <li><b>راستی‌آزمایی کن، اعتماد نکن.</b> یک دروازهٔ خودکار اثبات می‌کند هر معیار برآورده شده.</li>
+    </ol>
+    <aside class="notes">
+      این چهار اصل، نخ تسبیح همهٔ مهارت‌هایی است که می‌سازیم. هرگاه شک کردی بپرس: «آیا این ما
+      را به یک معیار پذیرشِ راستی‌آزمایی‌پذیر نزدیک می‌کند؟» اگر نه، این همان کدنویسی شهودی
+      در لباس مبدل است.
+    </aside>
+  </section>
+
+  <section>
+    <h2>چرخهٔ حیات SDD</h2>
+    <div class="flow">
+      <div class="node">🧠<br><b>brainstorm</b><br><span>PRD + معیار پذیرش</span></div>
+      <span class="arrow">←</span>
+      <div class="node">📐<br><b>write-spec</b><br><span>مشخصات فنی + برنامه</span></div>
+      <span class="arrow">←</span>
+      <div class="node">⚙️<br><b>implement-epic</b><br><span>ساخت TDD</span></div>
+      <span class="arrow">←</span>
+      <div class="node">✅<br><b>verify-epic</b><br><span>اثبات معیارها</span></div>
+    </div>
+    <p class="subtle center">احاطه‌شده با: <b>دانش پروژه</b>، <b>عامل‌های مشاور</b> و <b>مستندات دامنه</b>.</p>
+    <aside class="notes">
+      این ستون فقرات کل ارائه است. هر بخش بعدی روی یکی از این گره‌ها زوم می‌کند. به حلقه توجه
+      کنید: شکست‌های verify-epic به implement-epic بازمی‌گردند؛ پرسش‌های حل‌نشده به
+      brainstorm/write-spec بازمی‌گردند. تا رسیدن به اطمینان تکرار می‌شود.
+    </aside>
+  </section>
+
+  <section>
+    <h2>چارچوب، سرهم‌شده</h2>
+    <div class="grid4">
+      <div class="card"><h3>مهارت‌ها (Skills)</h3><p>brainstorm · write-spec · implement-epic · verify-epic · init-docs</p></div>
+      <div class="card"><h3>دانش (Knowledge)</h3><p>_architecture-reference · _coding-guidelines · _ux-reference</p></div>
+      <div class="card"><h3>مشاوران (Advisors)</h3><p>architecture · ux · codestyle</p></div>
+      <div class="card"><h3>مستندات (Docs)</h3><p>domain-index · domain-&lt;name&gt;</p></div>
+    </div>
+    <p class="subtle center">همه چیز درون <code>.github/</code> و <code>docs/</code> زندگی می‌کند — نسخه‌بندی‌شده همراه کد.</p>
+    <aside class="notes">
+      چهار ستون را پیش‌نمایش بدهید. باقی ارائه یک تور راهنمای هر کدام است. تأکید: این‌ها در
+      مخزن (Repo) کامیت می‌شوند، در PRها بازبینی می‌شوند، و توسط کل تیم و همهٔ عامل‌ها به
+      اشتراک گذاشته می‌شوند. همین آن را مهندسی می‌کند، نه بداهه‌پردازی.
+    </aside>
+  </section>
+</section>
+
+<!-- ===================== 5. مهارت: brainstorm ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 30% 30%, #1d1530 0%, #0d1117 60%)">
+    <span class="kicker">مهارت ۱ از ۵</span>
+    <h2>🧠 <span class="grad">brainstorm</span></h2>
+    <p class="subtle">تبدیل یک ایدهٔ مبهم به یک PRD اپیک (Epic) با سطح اطمینان قابل‌سنجش.</p>
+    <div class="card" style="margin-top:.5em">
+      <h3>PRD = سند الزامات محصول (Product Requirements Document)</h3>
+      <p class="tiny">سندی کوتاه و نسخه‌بندی‌شده که می‌گوید <b>چه چیزی</b> و <b>چرا</b> باید ساخته شود — مسئله، اهداف، الزامات و معیارهای پذیرش. یک <b>PRD اپیک</b> دامنهٔ یک قابلیت بزرگ (اپیک) را مشخص می‌کند و منبع حقیقتی است که کل حلقهٔ SDD بر آن بنا می‌شود.</p>
+    </div>
+    <aside class="notes">
+      brainstorm جایی است که ابهام می‌میرد. این مهارت، PRD اپیک را تولید می‌کند و یک حلقهٔ
+      ساختاریافتهٔ پرسش‌وپاسخ را پیش می‌برد تا هوش مصنوعی دست‌کم ۹۰٪ از درک منظور مطمئن شود.
+    </aside>
+  </section>
+
+  <section>
+    <h2>گردش‌کار brainstorm</h2>
+    <ol class="tight">
+      <li>اگر <b>PRD اپیک</b> وجود ندارد، آن را بساز.</li>
+      <li><b>سطح اطمینان (Confidence)</b> را در سرآیند PRD قرار بده.</li>
+      <li>در پایان، <b>پرسش‌های روشن‌گر</b> بپرس تا اطمینان ≥ ۹۰٪ شود.</li>
+      <li>در اجرای مجدد: پاسخ‌ها را به گزاره‌ها، الزامات و معیارهای پذیرش <b>تطبیق</b> بده؛ پرسش‌های حل‌شده را حذف کن؛ یک <b>گزارش تکرار (Iteration Log)</b> نگه دار.</li>
+      <li>تا رسیدن به ≥ ۹۰٪ پرسش‌های پراثر تولید کن.</li>
+    </ol>
+    <aside class="notes">
+      جادو در حلقه + تطبیق (Reconciliation) است. هرگز زمینه را از دست نمی‌دهی: پرسش‌های
+      پاسخ‌داده‌شده به الزامات و معیارهای پذیرش پایدار تبدیل می‌شوند، اطمینان PRD بالا می‌رود
+      و گزارش تکرار ثبت می‌کند که چطور به اینجا رسیدیم. این پادزهر «از دست رفتن زمینه» است.
+    </aside>
+  </section>
+
+  <section>
+    <h2>قالب پرسش</h2>
+    <pre dir="ltr"><code class="markdown" data-trim data-noescape>### Q3. How should sessions expire? (confidence impact: HIGH)
+- [ ] a) Never — sessions are permanent
+- [ ] b) Fixed 24h TTL  **(Recommended)**
+- [ ] c) Sliding window, refresh on activity
+- [ ] d) Configurable per-tenant
+
+> Mark your choice with an `x`, e.g. `- [x] b)`
+</code></pre>
+    <ul class="tight">
+      <li>دقیقاً <b>۴ گزینه</b>.</li>
+      <li>یک گزینه <b>پیشنهادشده (Recommended)</b> — اما از پیش انتخاب‌<em>نشده</em>.</li>
+      <li>کاربر با علامت <code>x</code> پاسخ می‌دهد.</li>
+    </ul>
+    <aside class="notes">
+      چرا دقیقاً همین قالب؟ چهار گزینه عامل را وادار می‌کند به بدیل‌های واقعی فکر کند.
+      «پیشنهادشده ولی انتخاب‌نشده» راهنمایی می‌دهد بدون اینکه اختیار را از تو بگیرد. علامت x
+      در اجرای مجدد به‌سادگی قابل‌تجزیه است. یکدستی یعنی خودکارسازی‌پذیری.
+    </aside>
+  </section>
+
+  <section>
+    <h2>سرآیند PRD — اطمینان، آشکار</h2>
+    <pre dir="ltr"><code class="markdown" data-trim data-noescape>---
+epic: checkout-redesign
+confidence: 72%   # &lt; 90% → more questions remain
+status: drafting
+iteration: 3
+---
+</code></pre>
+    <p class="subtle">اطمینان یک سیگنال درجه‌یک و آشکار است — نه یک حس شهودی.</p>
+    <aside class="notes">
+      آشکار و عددی‌کردن اطمینان، رفتار را تغییر می‌دهد. تیم در یک نگاه می‌بیند که آیا اپیک
+      آمادهٔ نوشتن مشخصات هست یا نه. کمتر از ۹۰٪ یعنی «به پرسیدن ادامه بده». همچنین یک قانون
+      توقف طبیعی به‌جای پرامپت‌زدن بی‌پایان می‌دهد.
+    </aside>
+  </section>
+</section>
+
+<!-- ===================== 6. مهارت: write-spec ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 30% 30%, #15233b 0%, #0d1117 60%)">
+    <span class="kicker">مهارت ۲ از ۵</span>
+    <h2>📐 <span class="grad">write-spec</span></h2>
+    <p class="subtle">ورودی: <b>نام اپیک</b>. خروجی: یک مشخصات فنی آمادهٔ TDD.</p>
+    <aside class="notes">
+      write-spec، PRD را مصرف می‌کند و نقشهٔ مهندسی را تولید می‌کند: معماری، طراحی، راهبرد
+      تست و یک برنامهٔ پیاده‌سازی دقیق — همه قابل‌ردیابی به معیارهای پذیرش.
+    </aside>
+  </section>
+
+  <section>
+    <h2>گردش‌کار write-spec</h2>
+    <ol class="tight">
+      <li><b>PRD اپیک</b> را بخوان.</li>
+      <li>یک <b>مشخصات فنی</b> دقیق بساز که همهٔ الزامات و معیارهای پذیرش را پوشش دهد.</li>
+      <li>رویکرد <b>TDD</b> را دنبال کن.</li>
+      <li>مطمئن شو هر معیار پذیرش با <b>معماری · طراحی · راهبرد تست · برنامهٔ پیاده‌سازی</b> پوشش داده می‌شود.</li>
+      <li>یک برنامهٔ پیاده‌سازی <b>دقیق و گام‌به‌گام</b> برای توسعه‌دهندگان تولید کن.</li>
+    </ol>
+    <aside class="notes">
+      واژهٔ کلیدی: «دقیق». برنامه باید توسط یک توسعه‌دهنده (یا implement-epic) بدون
+      تصمیم‌گیری مجدد دربارهٔ معماری قابل‌اجرا باشد. هر معیار پذیرش باید به بخشی از مشخصات
+      ردیابی شود — نه الزام یتیم، نه معیار تست‌نشده.
+    </aside>
+  </section>
+
+  <section>
+    <h2>همان حلقه — تصمیم‌های معماری</h2>
+    <ul class="tight">
+      <li>در پایان، پرسش‌های <b>معماری و تصمیم فنی</b> بپرس.</li>
+      <li>هر کدام: <b>۴ گزینه</b>، یک گزینه <b>پیشنهادشده</b> (انتخاب‌نشده).</li>
+      <li>در اجرای مجدد: پاسخ‌ها را به <b>تصمیم‌های معماری</b> تطبیق بده، پرسش‌های حل‌شده را حذف کن، گزارش تکرار نگه دار.</li>
+      <li>تا رسیدن به <b>اطمینان ≥ ۹۰٪</b> ادامه بده.</li>
+    </ul>
+    <p class="subtle">همان مکانیزم آزمودهٔ <code>brainstorm</code> — این بار روی انتخاب‌های فنی.</p>
+    <aside class="notes">
+      الگوی brainstorm را دوباره به کار می‌بریم، این بار برای تصمیم‌های فنی: پایگاه‌داده،
+      همگام در برابر ناهمگام، شکل API و غیره. تطبیق، یک گزارش تصمیم معماری (ADR) درون مشخصات
+      تولید می‌کند — یعنی ADRهای آینده‌ات، همان لحظه که پیش می‌روی نوشته می‌شوند.
+    </aside>
+  </section>
+
+  <section>
+    <h2>ماتریس ردیابی معیار پذیرش</h2>
+    <table class="cmp small">
+      <thead><tr><th>معیار</th><th>معماری</th><th>تست</th><th>گام برنامه</th></tr></thead>
+      <tbody>
+        <tr><td>AC-1</td><td>§۲ AuthService <span class="tiny">@Service</span></td><td>AuthServiceTest · login</td><td>گام ۴</td></tr>
+        <tr><td>AC-2</td><td>§۳ TokenStore <span class="tiny">@Repository</span></td><td>TokenStoreTest · expiry</td><td>گام ۶</td></tr>
+        <tr><td>AC-3</td><td>§۴ RateLimiter <span class="tiny">Filter</span></td><td>RateLimitIT · 429</td><td>گام ۹</td></tr>
+      </tbody>
+    </table>
+    <p class="subtle">اگر سطری خالی باشد، مشخصات کامل نیست.</p>
+    <aside class="notes">
+      این ماتریس قرارداد میان write-spec و verify-epic است. بعداً verify-epic دقیقاً همین
+      سطرها را می‌پیماید و PASS/PARTIAL/FAIL گزارش می‌دهد. خانه‌های خالی = شکاف‌هایی که
+      *پیش از* نوشتن کد می‌گیری.
+    </aside>
+  </section>
+</section>
+
+<!-- ===================== 7. مهارت: implement-epic ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 30% 30%, #102a22 0%, #0d1117 60%)">
+    <span class="kicker">مهارت ۳ از ۵</span>
+    <h2>⚙️ <span class="grad">implement-epic</span></h2>
+    <p class="subtle">ورودی: <b>نام اپیک</b>. اپیک را به‌سبک TDD می‌سازد، سپس راستی‌آزمایی می‌کند.</p>
+    <aside class="notes">
+      اینجا کد نوشته می‌شود — اما با ترتیبی منظم. اول تست‌ها، سپس کارکرد، سپس اعتبارسنجی
+      پوشش، سپس رفع خطا، سپس راستی‌آزمایی، و در پایان یک گزارش. شش گام.
+    </aside>
+  </section>
+
+  <section>
+    <h2>implement-epic · ۶ گام</h2>
+    <div class="steps">
+      <div><b>۱ · تست‌ها</b><span>اول تست بنویس، طبق مشخصات و TDD</span></div>
+      <div><b>۲ · کارکرد</b><span>طبق الزامات، معیارها و مشخصات بساز</span></div>
+      <div><b>۳ · اعتبارسنجی پوشش</b><span>هر معیار: پیاده‌سازی + تست + اجرای موفق</span></div>
+      <div><b>۴ · رفع خطا</b><span>پیاده‌سازی را اصلاح کن، تست‌های <em>مرتبط</em> را دوباره اجرا کن</span></div>
+      <div><b>۵ · راستی‌آزمایی</b><span>اجرای <code>verify-epic</code></span></div>
+      <div><b>۶ · گزارش</b><span>گزارش کامل پیاده‌سازی</span></div>
+    </div>
+    <aside class="notes">
+      گام ۴ تا عبور تست‌های مرتبط تکرار می‌شود — توجه کنید «مرتبط»، نه کل مجموعه (برای
+      سرعت). گام ۵ به مهارت راستی‌آزمایی به‌عنوان دروازه تحویل می‌دهد. گام ۶ یک گزارش
+      قابل‌ممیزی تولید می‌کند. هر جعبه را کوتاه توضیح دهید.
+    </aside>
+  </section>
+
+  <section>
+    <h2>گزارش پیاده‌سازی</h2>
+    <div class="two-col">
+      <ul class="tight">
+        <li>✅ الزامات پیاده‌سازی‌شده</li>
+        <li>🎯 پوشش معیارهای پذیرش</li>
+        <li>🧪 نتایج تست</li>
+      </ul>
+      <ul class="tight">
+        <li>⚠️ ریسک‌های باقیمانده</li>
+        <li>📊 سطح اطمینان</li>
+      </ul>
+    </div>
+    <p class="subtle">یک مصنوع قابل‌بازبینی — نه «به من اعتماد کن، کار می‌کند».</p>
+    <aside class="notes">
+      گزارش، اولین چیزی است که بازبین می‌خواند. «عامل یک کارهایی کرد» را به یک ادعای
+      ساختاریافته با شواهد و یک عدد اطمینان صادقانه — شامل ریسک‌های باقیمانده — تبدیل می‌کند.
+      این‌طور می‌توان کار عامل را در مقیاس بازبینی کرد.
+    </aside>
+  </section>
+</section>
+
+<!-- ===================== 8. مهارت: verify-epic ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 30% 30%, #2a1a2e 0%, #0d1117 60%)">
+    <span class="kicker">مهارت ۴ از ۵</span>
+    <h2>✅ <span class="grad">verify-epic</span></h2>
+    <p class="subtle">ورودی: <b>نام اپیک</b>. دروازهٔ مستقلی که کار را اثبات می‌کند.</p>
+    <aside class="notes">
+      verify-epic عمداً از implement-epic جداست — جداسازی «انجام‌دادن» و «بررسی‌کردن». پوشش
+      معیار↔تست را اعتبارسنجی می‌کند، تست‌های اپیک را اجرا می‌کند، انطباق با مشخصات را بررسی
+      می‌کند و برای هر معیار یک حکم صادر می‌کند.
+    </aside>
+  </section>
+
+  <section>
+    <h2>گردش‌کار verify-epic</h2>
+    <ol class="tight">
+      <li>اعتبارسنجی کن که هر معیار <b>دست‌کم یک تست</b> دارد.</li>
+      <li>تست‌های <b>مرتبط با اپیک</b> را اجرا کن.</li>
+      <li><b>پوشش پیاده‌سازی</b> را در برابر معیارها بررسی کن.</li>
+      <li><b>انطباق با مشخصات</b> را اعتبارسنجی کن.</li>
+      <li>یک <b>گزارش راستی‌آزمایی</b> تولید کن.</li>
+    </ol>
+    <aside class="notes">
+      توجه کنید گام ۱ ساختاری است (آیا اصلاً برای هر معیار تستی وجود دارد؟) پیش از آنکه گام ۲
+      آن‌ها را اجرا کند. می‌توانی به‌دلیل *تست‌نشده‌بودن* یک معیار در راستی‌آزمایی مردود شوی،
+      حتی اگر همهٔ تست‌های موجود سبز باشند. این یک نقطه‌کور کلاسیک را می‌بندد.
+    </aside>
+  </section>
+
+  <section>
+    <h2>حکم به‌ازای هر معیار</h2>
+    <table class="cmp small">
+      <thead><tr><th>معیار</th><th>حکم</th><th>یادداشت</th></tr></thead>
+      <tbody>
+        <tr><td>AC-1 Login</td><td class="pass">PASS</td><td>پیاده‌سازی + ۳ تست JUnit سبز</td></tr>
+        <tr><td>AC-2 Expiry</td><td class="part">PARTIAL</td><td>پیاده‌سازی هست، حالت مرزی تست‌نشده</td></tr>
+        <tr><td>AC-3 Rate limit</td><td class="fail">FAIL</td><td>بدون پیاده‌سازی</td></tr>
+      </tbody>
+    </table>
+    <p class="subtle">گزارش همچنین فهرست می‌کند: تست‌های گمشده · پیاده‌سازی گمشده · ریسک‌ها · توصیه‌ها.</p>
+    <aside class="notes">
+      سه حالت، نه دو حالت. PARTIAL همان میانهٔ صادقانه‌ای است که کدنویسی شهودی پنهانش می‌کند.
+      توصیه‌های گزارش مستقیم به حلقهٔ رفع خطای implement-epic بازمی‌گردند. این همان «تعریف
+      انجام‌شده»ی راستی‌آزمایی‌پذیری است که در بخش ۱ وعده دادیم.
+    </aside>
+  </section>
+</section>
+
+<!-- ===================== 9. یکپارچه‌سازی راستی‌آزمایی + Playwright ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 50% 25%, #15233b 0%, #0d1117 60%)">
+    <span class="kicker">سیم‌کشی همه‌چیز</span>
+    <h2>یکپارچه‌سازی <span class="grad">راستی‌آزمایی</span></h2>
+    <aside class="notes">
+      دو قاعده، راستی‌آزمایی را در حین توسعه سریع و سرِ دروازه دقیق می‌کند.
+    </aside>
+  </section>
+
+  <section>
+    <h2>راستی‌آزمایی دوسرعته</h2>
+    <div class="two-col">
+      <div class="card good">
+        <h3>در حین پیاده‌سازی</h3>
+        <ul><li>فقط تست‌های <b>مرتبط</b> اجرا شود</li><li><code>mvn -Dtest=AuthServiceTest test</code></li><li>بدون هزینهٔ کل مجموعه</li></ul>
+      </div>
+      <div class="card">
+        <h3>راستی‌آزمایی نهایی</h3>
+        <ul><li>اعتبارسنجی <b>کامل</b> اپیک — <code>mvn verify</code></li><li>راستی‌آزمایی <b>سرتاسری (End-to-End)</b></li><li><code>verify-epic</code> آخرین گام <code>implement-epic</code> است</li></ul>
+      </div>
+    </div>
+    <aside class="notes">
+      تنش: TDD به حلقه‌های سریع نیاز دارد، اما دروازه به اطمینان کامل. حلش با محدودکردن
+      دامنهٔ تست‌ها در حلقه و رفتن به حالت کامل + سرتاسری فقط سرِ دروازهٔ نهایی است.
+      verify-epic به‌عنوان گام پایانی implement-epic سیم‌کشی شده تا نتوانی راستی‌آزمایی را
+      «فراموش» کنی.
+    </aside>
+  </section>
+
+  <section>
+    <h2>🎭 یکپارچه‌سازی Playwright</h2>
+    <ol class="tight">
+      <li><b>Playwright MCP</b> را در پروژه نصب کن.</li>
+      <li>پشتیبانی <b>تست سرتاسری (E2E)</b> را پیکربندی کن — تست‌ها با <b>Playwright for Java</b> در کنار JUnit.</li>
+      <li>خودکارسازی مرورگر را برای تست‌های E2E، گردش‌کارهای راستی‌آزمایی و اعتبارسنجی سفر کاربر فعال کن.</li>
+      <li>Playwright را <b>در دسترس <code>verify-epic</code></b> قرار بده.</li>
+    </ol>
+    <p class="subtle">حالا راستی‌آزمایی می‌تواند یک مرورگر واقعی را هدایت کند — نه فقط تست‌های واحد.</p>
+    <aside class="notes">
+      Playwright MCP اجازه می‌دهد عامل راستی‌آزمایی واقعاً در اپ کلیک کند و سفرهای کاربر را
+      تأیید کند. معیارهای پذیرش مربوط به تجربهٔ کاربری/جریان‌ها قابل‌اجرا می‌شوند. این‌طور
+      verify-epic از «تست‌ها پاس می‌شوند» به «سفر کاربر کار می‌کند» ارتقا می‌یابد.
+    </aside>
+  </section>
+</section>
+
+<!-- ===================== 10. سامانهٔ دانش پروژه ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 30% 25%, #1d1530 0%, #0d1117 60%)">
+    <span class="kicker">بخش ۴ · دانش پروژه</span>
+    <h2>دانش <span class="grad">پایدار پروژه</span></h2>
+    <p class="subtle">دیگر هر جلسه کدبیس‌ات را از نو توضیح نده.</p>
+    <aside class="notes">
+      سه فایل مرجع کوتاه و کامیت‌شده، به هر مهارت و عامل زمینهٔ مشترک می‌دهند. با تحلیل کدبیس
+      تولید می‌شوند، پیاده‌سازی‌محور می‌مانند و در PRها بازبینی می‌شوند.
+    </aside>
+  </section>
+
+  <section>
+    <h2>سه فایل مرجع در <code>.github/</code></h2>
+    <div class="grid3">
+      <div class="card">
+        <h3>_architecture-reference.md</h3>
+        <ul class="tiny"><li>معماری سامانه</li><li>تصمیم‌های مهم طراحی</li><li>محدودیت‌ها (Constraints)</li><li>الگوهای توسعه</li><li>وابستگی‌های کلیدی</li></ul>
+      </div>
+      <div class="card">
+        <h3>_coding-guidelines.md</h3>
+        <ul class="tiny"><li>سبک کدنویسی</li><li>قراردادهای نام‌گذاری</li><li>قراردادهای تست</li><li>الگوهای طراحی</li><li>رویه‌های پروژه</li></ul>
+      </div>
+      <div class="card">
+        <h3>_ux-reference.md</h3>
+        <ul class="tiny"><li>راهنمای برند</li><li>سامانهٔ طراحی (Design System)</li><li>پالت رنگ</li><li>کاربرد کامپوننت‌ها</li><li>اصول UX و دسترس‌پذیری</li></ul>
+      </div>
+    </div>
+    <p class="subtle center">از کدبیس تولید می‌شوند · کوتاه می‌مانند · نسخه‌بندی می‌شوند.</p>
+    <aside class="notes">
+      کوتاه‌بودن یک ویژگی است — این‌ها در زمینه (Context) بارگذاری می‌شوند، پس اختصار مهم
+      است. با تحلیل کد واقعی تولید می‌شوند، نه آرمانی. هر کدام در اسلاید بعد به یک عامل مشاور
+      نگاشت می‌شود.
+    </aside>
+  </section>
+</section>
+
+<!-- ===================== 11. عامل‌های مشاور ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 30% 25%, #102a22 0%, #0d1117 60%)">
+    <span class="kicker">بخش ۵ · مشاوران</span>
+    <h2>عامل‌های <span class="grad">مشاور</span> (Advisory Agents)</h2>
+    <p class="subtle">متخصص‌هایی که در لحظهٔ درست نظر می‌دهند.</p>
+    <aside class="notes">
+      هر مشاور یک فایل مرجع را می‌خواند و در سراسر چرخهٔ حیات مشارکت می‌کند — طوفان فکری،
+      مشخصات، پیاده‌سازی، راستی‌آزمایی — و هرگاه تصمیم مرتبطی پیش بیاید، توصیهٔ دامنه‌ای ارائه
+      می‌دهد.
+    </aside>
+  </section>
+
+  <section>
+    <h2>سه مشاور، سه عدسی</h2>
+    <div class="grid3">
+      <div class="card">
+        <h3>architecture-advisor</h3>
+        <p class="tiny">از <code>_architecture-reference.md</code></p>
+        <ul class="tiny"><li>تصمیم‌های معماری</li><li>مقیاس‌پذیری</li><li>کارایی (Performance)</li><li>مرزهای سامانه</li></ul>
+      </div>
+      <div class="card">
+        <h3>ux-advisor</h3>
+        <p class="tiny">از <code>_ux-reference.md</code></p>
+        <ul class="tiny"><li>تجربهٔ کاربری</li><li>دسترس‌پذیری (Accessibility)</li><li>یکدستی طراحی</li></ul>
+      </div>
+      <div class="card">
+        <h3>codestyle-advisor</h3>
+        <p class="tiny">از <code>_coding-guidelines.md</code></p>
+        <ul class="tiny"><li>کیفیت کد</li><li>انطباق با سبک</li><li>بهترین رویه‌ها</li></ul>
+      </div>
+    </div>
+    <aside class="notes">
+      آن‌ها در هر چهار فاز مشارکت می‌کنند. مثل بازبین‌های ارشدی که همیشه در دسترس‌اند، هرگز
+      خسته نمی‌شوند و همیشه به همان استاندارد مشترک ارجاع می‌دهند. این، تصمیم‌ها را میان
+      اپیک‌ها و توسعه‌دهندگان یکدست نگه می‌دارد.
+    </aside>
+  </section>
+
+  <section>
+    <h2>مشاوران کجا وصل می‌شوند</h2>
+    <div class="flow small">
+      <div class="node">brainstorm</div><span class="arrow">←</span>
+      <div class="node">write-spec</div><span class="arrow">←</span>
+      <div class="node">implement-epic</div><span class="arrow">←</span>
+      <div class="node">verify-epic</div>
+    </div>
+    <p class="subtle center">🏛️ معماری · 🎨 تجربهٔ کاربری · 🧹 سبک کد — در هر تصمیم مرتبط مشورت می‌شوند.</p>
+    <aside class="notes">
+      به‌صورت بصری تأکید کنید: مشاوران یک فاز نیستند، یک دغدغهٔ عرضی (Cross-cutting) حاضر در
+      سراسر کارند. هرگاه تصمیم مرتبط با دامنه‌ای پیش بیاید، مشاور متناظر توصیه‌ای مبتنی بر
+      فایل مرجع ارائه می‌دهد.
+    </aside>
+  </section>
+</section>
+
+<!-- ===================== 12. سامانهٔ مستندسازی ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 30% 25%, #15233b 0%, #0d1117 60%)">
+    <span class="kicker">بخش ۶ · مستندسازی</span>
+    <h2>📚 <span class="grad">init-docs &lt;domain&gt;</span></h2>
+    <p class="subtle">مستندسازی دامنه‌محور (Domain-Driven)، تولیدشده از کد.</p>
+    <aside class="notes">
+      init-docs کدبیس را تحلیل می‌کند، یک دامنه را شناسایی می‌کند و مستندات دامنه‌محورِ زنده
+      تولید می‌کند. این به یک منبع دانش اصلی تبدیل می‌شود که عامل‌ها پیش از هر کاری به آن
+      مراجعه می‌کنند.
+    </aside>
+  </section>
+
+  <section>
+    <h2>گردش‌کار init-docs</h2>
+    <ol class="tight">
+      <li>کدبیس را تحلیل کن.</li>
+      <li><b>دامنه (Domain)</b> را شناسایی کن.</li>
+      <li><b>کد · APIها · تست‌ها · کامپوننت‌های</b> مرتبط را کشف کن.</li>
+      <li>مستندات <b>دامنه‌محور</b> تولید کن.</li>
+    </ol>
+    <pre dir="ltr"><code class="bash" data-trim>docs/
+├── domain-index.md        # navigation map + short domain descriptions
+└── domain-&lt;name&gt;.md       # full domain documentation</code></pre>
+    <aside class="notes">
+      ورودی فقط یک نام دامنه است. خروجی یک فهرست قابل‌پیمایش به‌علاوهٔ یک فایل تفصیلی برای هر
+      دامنه است. فهرست، نقطهٔ ورودی است که عامل‌ها پیش از برنامه‌ریزی کار برای جهت‌یابی از آن
+      استفاده می‌کنند.
+    </aside>
+  </section>
+
+  <section>
+    <h2>درون <code>domain-&lt;name&gt;.md</code></h2>
+    <div class="grid2">
+      <div class="card"><h3>مدل دامنه</h3><p class="tiny">موجودیت‌ها (Entities) · شیءهای مقدار (Value Objects) · تجمیع‌ها (Aggregates)</p></div>
+      <div class="card"><h3>نقاط پایانی API</h3><p class="tiny">درخواست‌ها · پاسخ‌ها · قراردادها (Contracts)</p></div>
+      <div class="card"><h3>رفتارهای کلیدی</h3><p class="tiny">قواعد کسب‌وکار · گردش‌کارها</p></div>
+      <div class="card"><h3>کامپوننت‌های کلیدی</h3><p class="tiny">سرویس‌ها · کنترلرها · مخازن (Repositories) · کامپوننت‌های UI</p></div>
+      <div class="card wide"><h3>قابلیت‌ها (Features)</h3><p class="tiny">برای هر قابلیت: توضیح + معیارهای پذیرش</p></div>
+    </div>
+    <aside class="notes">
+      این، DDD را بازتاب می‌دهد: مدل، قراردادها، رفتارها، کامپوننت‌ها و قابلیت‌ها با معیارهای
+      پذیرش. توجه کنید قابلیت‌ها هم معیار پذیرش دارند — پس مستندسازی و حلقهٔ SDD به یک زبان
+      صحبت می‌کنند.
+    </aside>
+  </section>
+
+  <section>
+    <h2>یکپارچه‌سازی مستندات</h2>
+    <p><code>docs/domain-index.md</code> را در دستورالعمل‌های Copilot و پیکربندی عامل‌ها سیم‌کشی کن.</p>
+    <p class="subtle">عامل‌ها هنگام این کارها به مستندات دامنه مراجعه می‌کنند:</p>
+    <div class="chips">
+      <span>برنامه‌ریزی کار</span><span>ساخت مشخصات</span><span>پیاده‌سازی قابلیت‌ها</span>
+      <span>راستی‌آزمایی</span><span>تصمیم‌های دامنه‌ای</span>
+    </div>
+    <p class="big center">مستندات = یک منبع دانش <span class="grad">اصلی</span>.</p>
+    <aside class="notes">
+      گام سیم‌کشی نهایی: از دستورالعمل‌های Copilot به فهرست دامنه ارجاع بده تا هر عامل
+      مستندات را معتبر بداند، نه اختیاری. این حلقه را می‌بندد — دانش به هر فاز چرخهٔ حیات
+      جریان می‌یابد.
+    </aside>
+  </section>
+</section>
+
+<!-- ===================== 13. دموی زنده ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 50% 25%, #2a1a2e 0%, #0d1117 60%)">
+    <span class="kicker">بخش ۷ · دموی زنده</span>
+    <h2>سرتاسری <span class="grad">در عمل</span></h2>
+    <p class="subtle">یک اپیک، چهار مهارت، سه مشاور.</p>
+    <aside class="notes">
+      زمان دمو. اگر دموی زنده ریسک طولانی‌شدن دارد، از این اسلایدها روایت کنید. یک اپیک کوچک و
+      واقعی انتخاب کنید تا حلقه در حدود ۸ دقیقه کامل شود.
+    </aside>
+  </section>
+
+  <section>
+    <h2>سناریوی دمو</h2>
+    <ol class="tight demo">
+      <li><code>brainstorm</code> ← پیش‌نویس PRD اپیک، پاسخ به ۲–۳ پرسش، تماشای صعود اطمینان تا ≥۹۰٪.</li>
+      <li><code>write-spec "auth"</code> ← مشخصات + ردیابی معیار پذیرش + پرسش‌های معماری (مثلاً Spring Security یا فیلتر سفارشی).</li>
+      <li><code>implement-epic "auth"</code> ← اول تست‌های JUnit، سپس کد @Service، حلقهٔ رفع خطا.</li>
+      <li><code>verify-epic "auth"</code> ← حکم هر معیار PASS / PARTIAL / FAIL + گزارش.</li>
+      <li>نمایش شلیک یک توصیهٔ مشاور در میانهٔ تصمیم.</li>
+    </ol>
+    <aside class="notes">
+      توضیح دهید روی صفحه به چه چیزی اشاره کنید: تغییر سرآیند اطمینان، تطبیق پاسخ‌های علامت‌دار
+      x به معیارهای پذیرش، ظاهرشدن تست‌ها پیش از کد، و جدول حکم هر معیار. روی گزارش تمام کنید.
+    </aside>
+  </section>
+
+  <section>
+    <h2>چه اتفاقی افتاد</h2>
+    <ul class="tight">
+      <li>یک ایده به یک <b>اپیک نسخه‌بندی‌شده و راستی‌آزمایی‌پذیر</b> تبدیل شد.</li>
+      <li>هر معیار پذیرش از PRD ← مشخصات ← تست ← حکم <b>قابل‌ردیابی</b> است.</li>
+      <li>تصمیم‌ها <b>ثبت</b> شدند، نه از دست رفتند.</li>
+      <li>انسان <b>کارگردانی و بازبینی</b> کرد — عامل‌ها مهندسی کردند.</li>
+    </ul>
+    <aside class="notes">
+      تضاد با بخش ۱ را برجسته کنید: نه بازبینی چشمی، نه زمینهٔ ازدست‌رفته، نه «درست به‌نظر
+      می‌رسد». یک ردِ پایدار از قصد تا اثبات. این پاداش کل سامانه است.
+    </aside>
+  </section>
+</section>
+
+<!-- ===================== 14. ضدالگوها ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 30% 25%, #2a1a1a 0%, #0d1117 60%)">
+    <span class="kicker">بخش ۸ · دام‌ها</span>
+    <h2>ضدالگوهایی <span class="grad">که باید پرهیز کرد</span></h2>
+    <aside class="notes">
+      یک فهرست بررسی سریع تا تیم‌ها دوباره کدنویسی شهودی را با چند گام اضافه بازاختراع نکنند.
+    </aside>
+  </section>
+
+  <section>
+    <h2>مراقب این‌ها باش…</h2>
+    <table class="cmp small">
+      <thead><tr><th>ضدالگو</th><th>راه‌حل</th></tr></thead>
+      <tbody>
+        <tr><td>نمایش مشخصات — مشخصات بنویس، بعد نادیده بگیر</td><td>verify-epic در برابر مشخصات</td></tr>
+        <tr><td>معیارهای پذیرشی که تست‌پذیر نیستند</td><td>بازنویسی به‌صورت نتایج مشاهده‌پذیر و تست‌پذیر</td></tr>
+        <tr><td>پریدن از حلقهٔ پرسش «برای صرفه‌جویی در زمان»</td><td>اطمینان پایین = دوباره‌کاری گران‌تر بعداً</td></tr>
+        <tr><td>اجرای کل مجموعهٔ تست در هر تغییر</td><td>تست‌های مرتبط در حلقه، کامل سرِ دروازه</td></tr>
+        <tr><td>دانش/مستندات کهنه</td><td>بازتولید کن؛ در PRها بازبینی کن</td></tr>
+        <tr><td>اعتماد کورکورانه به گزارش</td><td>گزارش، ریسک و اطمینان را نشان می‌دهد — بخوانشان</td></tr>
+      </tbody>
+    </table>
+    <aside class="notes">
+      هر راه‌حل به چیزی در چارچوب نگاشت می‌شود. نکتهٔ فرامتنی: چارچوب فقط وقتی کار می‌کند که
+      مشخصات منبع حقیقت بماند و راستی‌آزمایی صادقانه بماند.
+    </aside>
+  </section>
+</section>
+
+<!-- ===================== 15. نقشهٔ راه پذیرش ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 30% 25%, #102a22 0%, #0d1117 60%)">
+    <span class="kicker">بخش ۹ · استقرار</span>
+    <h2>نقشهٔ راه <span class="grad">پذیرش</span></h2>
+    <aside class="notes">
+      اقیانوس را به جوش نیاور. پذیرش را مرحله‌بندی کن تا تیم زود ارزش را حس کند.
+    </aside>
+  </section>
+
+  <section>
+    <h2>خزیدن ← راه‌رفتن ← دویدن</h2>
+    <p class="subtle">ایدهٔ این اسلاید: چارچوب را <b>مرحله‌به‌مرحله</b> بپذیر — اقیانوس را به جوش نیاور. هر مرحله به‌تنهایی ارزش می‌دهد تا تیم زود برد را حس کند و به‌سوی مهندسی عامل‌محورِ کامل شتاب بگیرد.</p>
+    <div class="steps">
+      <div><b>هفتهٔ ۱ · خزیدن</b><span>سه فایل دانش + <code>brainstorm</code> را اضافه کن. روی یک اپیک استفاده کن.</span></div>
+      <div><b>هفتهٔ ۲–۳ · راه‌رفتن</b><span><code>write-spec</code> + <code>implement-epic</code> + <code>verify-epic</code> را اضافه کن. TDD روی یک قابلیت واقعی.</span></div>
+      <div><b>هفتهٔ ۴ · دویدن</b><span>مشاوران + Playwright + <code>init-docs</code>. مستندات را در دستورالعمل‌ها سیم‌کشی کن.</span></div>
+      <div><b>پیوسته</b><span>مراجع را پالایش کن، مستندات دامنه را رشد بده، گزارش‌ها را در PRها بازبینی کن.</span></div>
+    </div>
+    <aside class="notes">
+      خزیدن با حداقل راه‌اندازی ارزش را اثبات می‌کند. راه‌رفتن حلقهٔ کامل TDD را معرفی می‌کند.
+      دویدن مشاوران، راستی‌آزمایی مرورگری و مستندات زنده را اضافه می‌کند. «پیوسته» جایی است
+      که اثرش انباشته می‌شود — هر اپیک پایگاه دانش را غنی‌تر می‌کند.
+    </aside>
+  </section>
+
+  <section>
+    <h2>سیگنال‌های موفقیت</h2>
+    <ul class="tight">
+      <li>📉 دوباره‌کاری کمتر و چرخه‌های کمترِ «منظورم این نبود».</li>
+      <li>🔍 بازبینی PR از یک گزارش شروع می‌شود، نه از یک حدس.</li>
+      <li>🧪 هر معیار پذیرش یک تست دارد — پوشش با طراحی.</li>
+      <li>🧠 تازه‌واردها با دانش + مستندات دامنه سریع آماده می‌شوند.</li>
+    </ul>
+    <aside class="notes">
+      به تیم نتایج قابل‌سنجش بدهید تا دنبال کنند. اگر این‌ها بهتر نمی‌شوند، به اسلاید
+      ضدالگوها برگردید.
+    </aside>
+  </section>
+</section>
+
+<!-- ===================== 16. پرسش‌وپاسخ / پایان ===================== -->
+<section>
+  <section data-background-gradient="radial-gradient(circle at 50% 30%, #15233b 0%, #0d1117 60%)">
+    <span class="kicker">بخش ۱۰ · گفت‌وگو</span>
+    <h2>پرسش‌وپاسخ و <span class="grad">گفت‌وگو</span></h2>
+    <ul class="tight">
+      <li>SDD امروز کجا بیشترین کمک را به <em>تیم شما</em> می‌کند؟</li>
+      <li>کدام اپیک را اول آزمایش می‌کنید؟</li>
+      <li>«تعریف انجام‌شده»ی فعلی شما چیست؟</li>
+      <li>هنوز کجا کدنویسی شهودی می‌خواهید؟</li>
+    </ul>
+    <aside class="notes">
+      با پرسش‌های مشخص باب گفت‌وگو را باز کنید. پاسخ‌ها را به چارچوب گره بزنید. پیش از خروج
+      افراد از اتاق، یک اپیک آزمایشی برای هر تیم ثبت کنید — این فراخوان به اقدام است.
+    </aside>
+  </section>
+
+  <section data-background-gradient="radial-gradient(circle at 30% 20%, #15233b 0%, #0d1117 60%)">
+    <h1 class="grad">سپاسگزارم</h1>
+    <p class="subtle">از کدنویسی شهودی ← تا مهندسی عامل‌محور.</p>
+    <p class="meta">مشخصات همان برنامه است. راستی‌آزمایی همان اثبات است.</p>
+    <div class="chips">
+      <span>brainstorm</span><span>write-spec</span><span>implement-epic</span><span>verify-epic</span><span>init-docs</span>
+    </div>
+    <aside class="notes">
+      پنج مهارت را روی صفحه جمع‌بندی کنید، تز را دوباره بیان کنید و با فراخوان به اقدام تمام
+      کنید: این هفته یک اپیک انتخاب کنید و آن را از حلقه عبور دهید. از حضار تشکر کنید.
+    </aside>
+  </section>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/markdown/markdown.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    rtl: true,
+    slideNumber: 'c/t',
+    transition: 'slide',
+    backgroundTransition: 'fade',
+    width: 1280,
+    height: 720,
+    margin: 0.06,
+    plugins: [ RevealNotes, RevealHighlight, RevealMarkdown ]
+  });
+</script>
+</body>
+</html>

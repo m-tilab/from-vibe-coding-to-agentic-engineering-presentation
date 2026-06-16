@@ -56,3 +56,12 @@ ol.principles{ list-style-position:inside; }
 .title-slide .hero{ text-align:center; }
 .presenter{ text-align:right; }
 .presenter-info .bio-links{ direction:ltr; text-align:right; }
+
+/* hero v2 RTL: content right, card left (flex auto-reverses); fix text alignment */
+.title-slide .hero2{ text-align:right; }
+.title-slide .hero2 .hero-title,
+.title-slide .hero2 .hero-sub,
+.title-slide .hero2 .meta{ text-align:right; }
+.title-slide .hero2 .journey{ justify-content:flex-start; }
+.pcard{ text-align:right; }
+.pcard-link{ text-align:right; }

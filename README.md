@@ -62,4 +62,3 @@ index-fa.html     # the deck (Persian / RTL)
 assets/theme.css  # dark GitHub-style theme
 assets/rtl.css    # RTL + Persian overrides
 ```
-# from-vibe-coding-to-agentic-engineering-presentation

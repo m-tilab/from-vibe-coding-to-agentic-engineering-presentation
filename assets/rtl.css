@@ -51,3 +51,8 @@ table.agenda td.t{ direction:rtl; }
 
 /* numbered principles read better with inside markers in RTL */
 ol.principles{ list-style-position:inside; }
+
+/* title/hero slide RTL tweaks */
+.title-slide .hero{ text-align:center; }
+.presenter{ text-align:right; }
+.presenter-info .bio-links{ direction:ltr; text-align:right; }

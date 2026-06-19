@@ -841,24 +841,68 @@ iteration: 3
 <section>
   <section data-background-gradient="radial-gradient(circle at 50% 25%, #2a1a2e 0%, #0d1117 60%)">
     <span class="kicker">Part 7 · Live Demo</span>
-    <h2>End-to-end <span class="grad">in action</span></h2>
-    <p class="subtle">One epic, four skills, three advisors.</p>
+    <h2>Run the <span class="grad">SDD loop</span></h2>
+    <p class="subtle">Setup → copy an idea → run four skills → verify the result.</p>
     <aside class="notes">
       Demo time. If the live demo risks running long, narrate from these slides as a
-      fallback. Pick a small, real epic so the loop completes inside ~8 minutes.
+      fallback. Use one small, independent epic so the loop fits the final demo slot.
     <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
     <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> زمان دمو. اگر دموی زنده ریسک طولانی‌شدن دارد، از این اسلایدها روایت کنید. یک اپیک کوچک و
-      واقعی انتخاب کنید تا حلقه در حدود ۸ دقیقه کامل شود.</div>
+      مستقل انتخاب کنید تا حلقه در زمان پایانی دمو جا شود.</div>
   </aside>
   </section>
 
   <section>
-    <h2>Demo script</h2>
+    <h2>1 · Setup Copilot for SDD</h2>
     <ol class="tight demo">
-      <li><code>brainstorm</code> → draft Epic PRD, answer 2–3 questions, watch confidence climb to ≥90%.</li>
-      <li><code>write-spec "auth"</code> → spec + AC traceability + architecture questions (e.g. Spring Security vs custom filter).</li>
-      <li><code>implement-epic "auth"</code> → JUnit tests first, then @Service code, fix loop.</li>
-      <li><code>verify-epic "auth"</code> → per-AC PASS / PARTIAL / FAIL + report.</li>
+      <li>Add repo instructions: <code>.github/copilot-instructions.md</code> points Copilot to the SDD workflow and project docs.</li>
+      <li>Add knowledge files: <code>_architecture-reference.md</code>, <code>_coding-guidelines.md</code>, <code>_ux-reference.md</code>.</li>
+      <li>Register the core skills: <code>brainstorm</code>, <code>write-spec</code>, <code>implement-epic</code>, <code>verify-epic</code>.</li>
+      <li>Configure advisors for architecture, UX, and codestyle decisions.</li>
+      <li>Optionally wire <code>init-docs</code> and Playwright MCP before UI-heavy epics.</li>
+    </ol>
+    <aside class="notes">
+      Show the setup as the guardrail layer before any code generation. The key point is that
+      Copilot needs durable instructions, concise project knowledge, lifecycle skills, and
+      advisory agents before it can behave like an engineering partner instead of a chat prompt.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> راه‌اندازی را به‌عنوان لایهٔ گاردریل پیش از هر تولید کد نشان بدهید. نکتهٔ اصلی این است که
+      Copilot برای اینکه مثل یک شریک مهندسی عمل کند، نه فقط یک پرامپت چت، به دستورالعمل پایدار،
+      دانش پروژهٔ فشرده، مهارت‌های چرخهٔ حیات و عامل‌های مشاور نیاز دارد.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>2 · Copy-paste demo input</h2>
+    <pre><code class="text" data-trim>Idea: Create a simple personal habit tracker.
+
+I want a small app where a user can define daily habits,
+mark them as done, and see their current streak.
+
+It should be easy to use, work without mail, database,
+external APIs, or other services, and help the user stay
+motivated with simple progress feedback.
+
+Focus on the main user journey: create a habit, complete it
+today, see progress, and recover if a day was missed.</code></pre>
+    <p class="subtle">Copy this text directly into <code>brainstorm</code>.</p>
+    <aside class="notes">
+      Use this as the exact input to brainstorm. It is intentionally simple and non-technical so
+      the audience can watch the SDD process create structure: questions, requirements,
+      acceptance criteria, and decisions.
+    <hr style="border:none;border-top:1px dashed #888;margin:10px 0;">
+    <div dir="rtl" lang="fa" style="text-align:right;font-family:Tahoma,sans-serif;line-height:1.7;"><b>🇮🇷 فارسی:</b> همین متن را به‌عنوان ورودی brainstorm استفاده کنید. عمداً ساده و غیرتکنیکی است تا مخاطب
+      ببیند فرایند SDD چطور ساختار می‌سازد: پرسش‌ها، نیازمندی‌ها، معیارهای پذیرش و تصمیم‌ها.</div>
+  </aside>
+  </section>
+
+  <section>
+    <h2>3 · Run the SDD loop</h2>
+    <ol class="tight demo">
+      <li><code>brainstorm</code> → paste the habit-tracker idea, answer 2–3 questions, reach ≥90% confidence.</li>
+      <li><code>write-spec "habit-tracker"</code> → spec + AC traceability + architecture questions.</li>
+      <li><code>implement-epic "habit-tracker"</code> → tests first, then simple app behavior, fix loop.</li>
+      <li><code>verify-epic "habit-tracker"</code> → per-AC PASS / PARTIAL / FAIL + report.</li>
       <li>Show an advisor recommendation firing mid-decision.</li>
     </ol>
     <aside class="notes">
@@ -872,7 +916,7 @@ iteration: 3
   </section>
 
   <section>
-    <h2>What just happened</h2>
+    <h2>4 · What just happened</h2>
     <ul class="tight">
       <li>An idea became a <b>versioned, verifiable epic</b>.</li>
       <li>Every AC is <b>traceable</b> from PRD → spec → test → verdict.</li>

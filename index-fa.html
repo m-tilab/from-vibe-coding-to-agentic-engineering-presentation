@@ -696,21 +696,57 @@ iteration: 3
 <section>
   <section data-background-gradient="radial-gradient(circle at 50% 25%, #2a1a2e 0%, #0d1117 60%)">
     <span class="kicker">بخش ۷ · دموی زنده</span>
-    <h2>سرتاسری <span class="grad">در عمل</span></h2>
-    <p class="subtle">یک اپیک، چهار مهارت، سه مشاور.</p>
+    <h2>اجرای <span class="grad">حلقهٔ SDD</span></h2>
+    <p class="subtle">راه‌اندازی ← کپی ایده ← اجرای چهار مهارت ← راستی‌آزمایی نتیجه.</p>
     <aside class="notes">
       زمان دمو. اگر دموی زنده ریسک طولانی‌شدن دارد، از این اسلایدها روایت کنید. یک اپیک کوچک و
-      واقعی انتخاب کنید تا حلقه در حدود ۸ دقیقه کامل شود.
+      مستقل انتخاب کنید تا حلقه در زمان پایانی دمو جا شود.
     </aside>
   </section>
 
   <section>
-    <h2>سناریوی دمو</h2>
+    <h2>۱ · راه‌اندازی SDD در Copilot</h2>
     <ol class="tight demo">
-      <li><code>brainstorm</code> ← پیش‌نویس PRD اپیک، پاسخ به ۲–۳ پرسش، تماشای صعود اطمینان تا ≥۹۰٪.</li>
-      <li><code>write-spec "auth"</code> ← مشخصات + ردیابی معیار پذیرش + پرسش‌های معماری (مثلاً Spring Security یا فیلتر سفارشی).</li>
-      <li><code>implement-epic "auth"</code> ← اول تست‌های JUnit، سپس کد @Service، حلقهٔ رفع خطا.</li>
-      <li><code>verify-epic "auth"</code> ← حکم هر معیار PASS / PARTIAL / FAIL + گزارش.</li>
+      <li>دستورالعمل مخزن را اضافه کن: <code>.github/copilot-instructions.md</code> جریان SDD و مستندات پروژه را به Copilot معرفی می‌کند.</li>
+      <li>فایل‌های دانش را اضافه کن: <code>_architecture-reference.md</code>، <code>_coding-guidelines.md</code>، <code>_ux-reference.md</code>.</li>
+      <li>مهارت‌های اصلی را ثبت کن: <code>brainstorm</code>، <code>write-spec</code>، <code>implement-epic</code>، <code>verify-epic</code>.</li>
+      <li>مشاورهای معماری، UX و سبک کدنویسی را برای تصمیم‌های میانی پیکربندی کن.</li>
+      <li>برای اپیک‌های UI-heavy، در صورت نیاز <code>init-docs</code> و Playwright MCP را هم وصل کن.</li>
+    </ol>
+    <aside class="notes">
+      راه‌اندازی را به‌عنوان لایهٔ گاردریل پیش از هر تولید کد نشان بدهید. نکتهٔ اصلی این است که
+      Copilot برای اینکه مثل یک شریک مهندسی عمل کند، نه فقط یک پرامپت چت، به دستورالعمل پایدار،
+      دانش پروژهٔ فشرده، مهارت‌های چرخهٔ حیات و عامل‌های مشاور نیاز دارد.
+    </aside>
+  </section>
+
+  <section>
+    <h2>۲ · متن آماده برای کپی در دمو</h2>
+    <pre><code class="text" data-trim>Idea: Create a simple personal habit tracker.
+
+I want a small app where a user can define daily habits,
+mark them as done, and see their current streak.
+
+It should be easy to use, work without mail, database,
+external APIs, or other services, and help the user stay
+motivated with simple progress feedback.
+
+Focus on the main user journey: create a habit, complete it
+today, see progress, and recover if a day was missed.</code></pre>
+    <p class="subtle">این متن را مستقیم در <code>brainstorm</code> کپی کن.</p>
+    <aside class="notes">
+      همین متن را به‌عنوان ورودی brainstorm استفاده کنید. عمداً ساده و غیرتکنیکی است تا مخاطب
+      ببیند فرایند SDD چطور ساختار می‌سازد: پرسش‌ها، نیازمندی‌ها، معیارهای پذیرش و تصمیم‌ها.
+    </aside>
+  </section>
+
+  <section>
+    <h2>۳ · اجرای حلقهٔ SDD</h2>
+    <ol class="tight demo">
+      <li><code>brainstorm</code> ← ایدهٔ Habit Tracker را paste کن، به ۲–۳ پرسش پاسخ بده، اطمینان را به ≥۹۰٪ برسان.</li>
+      <li><code>write-spec "habit-tracker"</code> ← مشخصات + ردیابی معیار پذیرش + پرسش‌های معماری.</li>
+      <li><code>implement-epic "habit-tracker"</code> ← اول تست‌ها، سپس رفتار سادهٔ اپ، حلقهٔ رفع خطا.</li>
+      <li><code>verify-epic "habit-tracker"</code> ← حکم هر معیار PASS / PARTIAL / FAIL + گزارش.</li>
       <li>نمایش شلیک یک توصیهٔ مشاور در میانهٔ تصمیم.</li>
     </ol>
     <aside class="notes">
@@ -720,7 +756,7 @@ iteration: 3
   </section>
 
   <section>
-    <h2>چه اتفاقی افتاد</h2>
+    <h2>۴ · چه اتفاقی افتاد</h2>
     <ul class="tight">
       <li>یک ایده به یک <b>اپیک نسخه‌بندی‌شده و راستی‌آزمایی‌پذیر</b> تبدیل شد.</li>
       <li>هر معیار پذیرش از PRD ← مشخصات ← تست ← حکم <b>قابل‌ردیابی</b> است.</li>

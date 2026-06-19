@@ -4,6 +4,8 @@ A browser-based slide deck (reveal.js) presenting the **Spec-Driven Development 
 framework for GitHub Copilot** — how developers move from "vibe coding" to disciplined
 agentic engineering. Designed for a **90-minute** hands-on session for developers.
 
+**Live deck:** https://m-tilab.github.io/from-vibe-coding-to-agentic-engineering-presentation/
+
 ## Languages
 
 | File | Language | Direction |
